@@ -1,10 +1,12 @@
-x +0.1.0 New-SemanticVersion
-x +0.1.0 Increment version numbers
-x +0.1.0 Convert to and from MS versions
-x +0.1.0 Make conversion to/from MS Version happen in functions external of core object.
-+0.1.0 Add formatting file to make this look better by default.
-+0.1.0 Test scripts for all functions.
-+0.1.0 All public functions documented.
-+0.1.0 Create +About_SemanticVersion document.
-+1.0.0 Add function for updating semantic version string in text file.
-+1.0.0 Add version compare functions
+x @0.1 New-SemanticVersion
+x @0.1 Increment version numbers
+x @0.1 Convert to and from MS versions
+x 2016-08-09 @0.1 Make conversion to/from MS Version happen in functions external of core object.
+@0.1 Add +Test-SemanticVersion function status:in-progress
+@0.1 Add .CompareTo() method to object.
+@0.1 Add +Compare-SemanticVersion function
+@0.1 Add +SemanticVersion.format.ps1xml formatting file to make this look better by default.
+@0.1 Test scripts for all functions.
+@0.1 All public functions documented.
+@0.1 Create +About_SemanticVersion document.
+@1.0 Add function for updating semantic version string in text file.
