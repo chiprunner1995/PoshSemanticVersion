@@ -1,23 +1,3 @@
-
-<#
-$SemVerRegEx = '^(0|[1-9][0-9]*)' + 
-               '\.(0|[1-9][0-9]*)' + 
-               '\.(0|[1-9][0-9]*)' + 
-               '(-(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*)(\.(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*))*)?' + 
-               '(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$'
-#>
-
-
-<#
-# Labeled groups.
-$SemVerRegEx = '^(?<major>(0|[1-9][0-9]*))' + 
-               '\.(?<minor>(0|[1-9][0-9]*))' + 
-               '\.(?<patch>(0|[1-9][0-9]*))' + 
-               '(-(?<prerelease>(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*)(\.(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*))*))?' + 
-               '(\+(?<build>[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?$'
-#>
-
-
 #region Public functions
 
 
@@ -563,7 +543,70 @@ function Convert-SystemVersionToSemanticVersion {
 }
 
 
+function Test-SemanticVersion {
+<#
+.Synopsis
+   Tests if a string is a valid semantic version.
+
+.DESCRIPTION
+   Tests if a string is a valid semantic version.
+
+.EXAMPLE
+   Test-SemanticVersion '1.2.3-alpha.1+build.456'
+
+   True
+
+   This example shows the result if the provided string is a valid semantic version.
+
+.EXAMPLE
+   Test-SemanticVersion '1.2.3-alpha.01+build.456'
+
+   False
+
+   This example shows the result if the provided string is not a valid semantic version.
+#>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param (
+        # The semantic version string to validate.
+        [Parameter(Mandatory=$true,
+                   ValueFromPipeline=$true,
+                   Position=0)]
+        [string]
+        $Version
+    )
+
+    if ($Version -match $SemVerRegEx) {
+        $true
+    }
+    else {
+        $false
+    }
+}
+
+
 #endregion Public functions
 
 
-Export-ModuleMember -Function @('New-SemanticVersion', 'Step-SemanticVersion', 'Convert-SemanticVersionToSystemVersion', 'Convert-SystemVersionToSemanticVersion')
+
+#region Private variables
+
+[string] $SemanticVersionTypeName = 'CustomSemanticVersion'
+
+[string] $SemVerRegEx = '^(0|[1-9][0-9]*)' + 
+                        '\.(0|[1-9][0-9]*)' + 
+                        '\.(0|[1-9][0-9]*)' + 
+                        '(-(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*)(\.(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*))*)?' + 
+                        '(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$'
+
+[string] $NamedSemVerRegEx = '^(?<major>(0|[1-9][0-9]*))' + 
+                        '\.(?<minor>(0|[1-9][0-9]*))' + 
+                        '\.(?<patch>(0|[1-9][0-9]*))' + 
+                        '(-(?<prerelease>(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*)(\.(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*))*))?' + 
+                        '(\+(?<build>[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?$'
+
+
+#endregion Private variables
+
+
+Export-ModuleMember -Function @('New-SemanticVersion', 'Step-SemanticVersion', 'Convert-SemanticVersionToSystemVersion', 'Convert-SystemVersionToSemanticVersion', 'Test-SemanticVersion')
