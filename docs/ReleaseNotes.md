@@ -9,9 +9,11 @@ number cannot be expressed using Semantic Versioning.
 ### Added
 - Added Convert-SemanticVersionToSystemVersion
 - Added Convert-SystemVersionToSemanticVersion
+
 ### Changed
 - Updated regular expression to evaluate semver string better.
 - Moved this module back to a standalone project.
+
 ### Removed
 - Removed object methods to convert to and from MS System.Version
   because this functionality is handled by external functions.
