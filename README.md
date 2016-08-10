@@ -1,2 +1,4 @@
 # SemanticVersion
-Work with Semantic Version numbers in PowerShell
+
+Functions for working with Semantic Version numbers in PowerShell.
+
