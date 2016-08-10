@@ -1,7 +1,7 @@
 x +0.1.0 New-SemanticVersion
 x +0.1.0 Increment version numbers
 x +0.1.0 Convert to and from MS versions
-+0.1.0 Make conversion to/from MS Version happen in functions external of core object.
+x +0.1.0 Make conversion to/from MS Version happen in functions external of core object.
 +0.1.0 Add formatting file to make this look better by default.
 +0.1.0 Test scripts for all functions.
 +0.1.0 All public functions documented.

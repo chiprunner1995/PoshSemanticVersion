@@ -1,6 +1,5 @@
 {
     "name":  "SemanticVersion",
-    "version": "0.4.0-alpha.1+13",
-    "_msVersion": "0.4.13.0",
-    "_changeDescription": "Moving MS version conversion functions to external functions."
+    "version": "0.4.0+14",
+    "_msVersion": "0.4.14.0"
 }

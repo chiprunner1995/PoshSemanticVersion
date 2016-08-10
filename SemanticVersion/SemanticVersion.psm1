@@ -1,5 +1,4 @@
 
-
 <#
 $SemVerRegEx = '^(0|[1-9][0-9]*)' + 
                '\.(0|[1-9][0-9]*)' + 
@@ -17,6 +16,9 @@ $SemVerRegEx = '^(?<major>(0|[1-9][0-9]*))' +
                '(-(?<prerelease>(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*)(\.(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*))*))?' + 
                '(\+(?<build>[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?$'
 #>
+
+
+#region Public functions
 
 
 function New-SemanticVersion {
@@ -38,7 +40,7 @@ function New-SemanticVersion {
     param (
         [Parameter(ParameterSetName='String',
                    Position=0,
-                   ValueFromPipeline,
+                   ValueFromPipeline=$true,
                    Mandatory=$true)]
         [ValidateScript({
             if ($_ -match '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*)(\.(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*))*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$') {
@@ -137,12 +139,7 @@ function New-SemanticVersion {
         $Build
     )
 
-    Write-Debug "Passed parameters`:`n - Major`: $Major`n - Minor`; $Minor`n - Patch`: $Patch`n - PreRelease`: '$PreRelease'`n - Build`: '$Build'`n"
-
-    #if (($Major -eq 0) -and ($PreRelease -eq '')) {
-    #    Write-Debug 'Evaluated'
-    #    $PreRelease = 'InitialDevelopment'
-    #}
+    #Write-Debug "Passed parameters`:`n - Major`: $Major`n - Minor`; $Minor`n - Patch`: $Patch`n - PreRelease`: '$PreRelease'`n - Build`: '$Build'`n"
 
     $SemVerObj = New-Module -Name SemanticVersionObjectPrototype -AsCustomObject -ScriptBlock {
         [CmdletBinding()]
@@ -242,70 +239,6 @@ function New-SemanticVersion {
         }
 
 
-        function ToMSVersion {
-            [int32] $MSMajor = $Script:Major
-            [int32] $MSMinor = $Script:Minor
-            [int32] $MSBuild = 0
-            [int32] $MSRevision = $Script:Patch
-
-            if ($Script:Build.Length -gt 0) {
-                [string[]] $BuildArray = $Script:Build -split '\.'
-                [bool] $numberFound = $false
-
-                if ($BuildArray.Count -gt 1) {
-                    Write-Warning 'MS Version format does not support multiple build indicators. Only the last numeric build indicator will be retained.'
-                }
-
-                for ($i = ($BuildArray.Count - 1); $i -ge 0; $i--) {
-                    if ($BuildArray[$i] -match '\d+') {
-                        $numberFound = $true
-                        [int32] $MSBuild = [int32] $BuildArray[$i]
-                        break
-                    }
-                }
-
-                if (!$numberFound) {
-
-                    Write-Warning "MS Version format does not support non-numeric build indicators. Build version `"$Build`" will not be saved to MS Version."
-                }
-            }
-
-            if ($Script:PreRelease -ne '') {
-                Write-Warning "MS Version format does not support pre-release versions. Pre-release version `"$PreRelease`" will not be saved to MS Version."
-            }
-
-            New-Object -TypeName System.Version -ArgumentList @($MSMajor, $MSMinor, $MSBuild, $MSRevision)
-        }
-
-
-        function FromMSVersion {
-            param (
-                [System.Version]
-                $Version
-            )
-
-            $Script:Major = $Version.Major
-            $Script:Minor = $Version.Minor
-
-            if ($Version.Revision -lt 1) {
-                $Script:Patch = 0
-            }
-            else {
-                $Script:Patch = $Version.Revision
-            }
-
-            $Script:PreRelease = ''
-
-            if ($Version.Build -lt 1) {
-                $Script:Build = ''
-            }
-            else {
-                $Script:Build = $Version.Build
-            }
-
-        }
-
-
         function StepMajor {
             $Script:Major++
             $Script:Minor = 0
@@ -378,7 +311,7 @@ function New-SemanticVersion {
         }
 
 
-        Export-ModuleMember -Function @('ToString', 'FromString', 'ToMSVersion', 'FromMSVersion', 'StepMajor', 'StepMinor', 'StepPatch', 'StepPreRelease', 'StepBuild') -Variable @('Major', 'Minor', 'Patch', 'PreRelease', 'Build')
+        Export-ModuleMember -Function @('ToString', 'FromString', 'StepMajor', 'StepMinor', 'StepPatch', 'StepPreRelease', 'StepBuild') -Variable @('Major', 'Minor', 'Patch', 'PreRelease', 'Build')
     }
 
     $SemVerObj.pstypenames.Insert(0, 'Custom.SemanticVersion')
@@ -421,22 +354,20 @@ function New-SemanticVersion {
 function Step-SemanticVersion {
 <#
 .Synopsis
-   Increments a System.Version number.
+   Increments a Semantic Version number.
 
 .DESCRIPTION
-   Increments a System.Version number.
+   Increments a Semantic Version number.
 
-   - Incrementing the Major number will reset the Minor number and the Revision number to 0. The Build number will not be changed.
+   - Incrementing the Major number will reset the Minor number and the Patch number to 0. The PreRelease and Build number will not be changed.
 
-   - Incrementing the Minor number will reset the Revision number to 0. The Major number and the Build number will not be changed.
+   - Incrementing the Minor number will reset the Patch number to 0. The Major, PreRelease number, and the Build number will not be changed.
+
+   - Incrementing the Patch number does not change any other parts of the version number.
+
+   - Incrementing the PreRelease number does not change any other parts of the version number.
 
    - Incrementing the Build number does not change any other parts of the version number.
-
-   - Incrementing the Revision number will also change the MajorRevision and MinorRevision numbers. The Major number, Minor number, and Build number will not be changed.
-
-   - Incrementing the MajorRevision number will also change the Revision number. The Major number, Minor number, Build number, and MinorRevision number will not be changed.
-
-   - Incrementing the MinorRevision number will also change the Revision number. The Major number, Minor number, Build number, and the MajorRevision number will not be changed.
 
 .EXAMPLE
    Example of how to use this cmdlet
@@ -462,23 +393,28 @@ function Step-SemanticVersion {
         [Alias('Version','Number')]
         $InputObject,
 
+        # Specifies that the build number should be incremented. Increments the last build indicator found. No other component of the version number will be incremented. This is default.
         [Parameter(ParameterSetName='Build')]
         [switch]
         $Build,
 
+        # Specifies that the pre-release number should be incremented. Increments the last pre-release indicator found. No other component of the version number will be incremented.
         [Parameter(ParameterSetName='PreRelease')]
         [switch]
         $PreRelease,
 
+        # Specifies that the patch number should be incremented. No other component of the version number will be incremented.
         [Parameter(ParameterSetName='Patch')]
         [switch]
         [Alias('Revision')]
         $Patch,
 
+        # Specifies that the minor number should be incremented. This also resets the patch number to zero. No other component of the version number will be incremented.
         [Parameter(ParameterSetName='Minor')]
         [switch]
         $Minor,
 
+        # Specifies that the major number should be incremented. This also resets the minor number and patch number to zero. No other component of the version number will be incremented.
         [Parameter(ParameterSetName='Major')]
         [switch]
         $Major
@@ -508,10 +444,126 @@ function Step-SemanticVersion {
 }
 
 
-# function ConvertTo-SemanticVersionFromMSVersion
+function Convert-SemanticVersionToSystemVersion {
+<#
+.Synopsis
+   Short description
+
+.DESCRIPTION
+   Long description
+
+.EXAMPLE
+   Example of how to use this cmdlet
+
+.EXAMPLE
+   Another example of how to use this cmdlet
+#>
+    [CmdletBinding()]
+    [OutputType([System.Version])]
+    param (
+        # The semantic version to be converted. Must be a string or an object that can be converted to a string, and the string must be a valid semantic version string.
+        [Parameter(Mandatory=$true,
+                   ValueFromPipeline=$true,
+                   Position=0)]
+        [object]
+        [Alias('SemanticVersion', 'SemVer')]
+        $InputObject
+    )
+
+    try {
+        $SemVer = New-SemanticVersion -String $InputObject.ToString()
+    }
+    catch {
+        throw 'InputObject.ToString() was not a valid semantic version string.'
+    }
 
 
-# function ConvertFrom-SemanticVersionToMSVersion
+
+    [int32] $SysVerMajor = $SemVer.Major
+    [int32] $SysVerMinor = $SemVer.Minor
+    [int32] $SysVerBuild = 0
+    [int32] $SysVerRevision = $SemVer.Patch
+
+    if ($SemVer.Build.Length -gt 0) {
+        [string[]] $BuildArray = @($SemVer.Build -split '\.')
+        [bool] $numberFound = $false
+
+        if ($BuildArray.Count -gt 1) {
+            Write-Warning 'System.Version format does not support multiple build indicators. Only the last numeric build indicator will be retained.'
+        }
+
+        for ($i = ($BuildArray.Count - 1); $i -ge 0; $i--) {
+            if ($BuildArray[$i] -match '\d+') {
+                $numberFound = $true
+                [int32] $SysVerBuild = [int32] $BuildArray[$i]
+                break
+            }
+        }
+
+        if (!$numberFound) {
+
+            Write-Warning "System.Version format does not support non-numeric build indicators. Semantic build version `"$($SemVer.Build)`" will not be saved to System.Version."
+        }
+    }
+
+    if ($SemVer.PreRelease.Length -gt 0) {
+        Write-Warning "System.Version format does not support pre-release versions. Semantic pre-release version `"$($SemVer.PreRelease)`" will not be saved to System.Version."
+    }
+
+    New-Object -TypeName System.Version -ArgumentList @($SysVerMajor, $SysVerMinor, $SysVerBuild, $SysVerRevision)
+}
 
 
-Export-ModuleMember -Function '*-*'
+function Convert-SystemVersionToSemanticVersion {
+<#
+.Synopsis
+   Short description
+
+.DESCRIPTION
+   Long description
+
+.EXAMPLE
+   Example of how to use this cmdlet
+
+.EXAMPLE
+   Another example of how to use this cmdlet
+#>
+    [CmdletBinding()]
+    [OutputType('Custom.SemanticVersion')]
+    Param
+    (
+        # A version in System.Version format.
+        [Parameter(Mandatory=$true,
+                   ValueFromPipeline=$true,
+                   Position=0)]
+        [System.Version]
+        $Version
+    )
+
+    $SemVerMajor = $Version.Major
+    $SemVerMinor = $Version.Minor
+
+    if ($Version.Revision -lt 1) {
+        $SemVerPatch = 0
+    }
+    else {
+        $SemVerPatch = $Version.Revision
+    }
+
+    $SemVerPreRelease = ''
+
+    if ($Version.Build -lt 1) {
+        $SemVerBuild = ''
+    }
+    else {
+        $SemVerBuild = $Version.Build
+    }
+
+    New-SemanticVersion -Major $SemVerMajor -Minor $SemVerMinor -Patch $SemVerPatch -PreRelease $SemVerPreRelease -Build $SemVerBuild
+}
+
+
+#endregion Public functions
+
+
+Export-ModuleMember -Function @('New-SemanticVersion', 'Step-SemanticVersion', 'Convert-SemanticVersionToSystemVersion', 'Convert-SystemVersionToSemanticVersion')
