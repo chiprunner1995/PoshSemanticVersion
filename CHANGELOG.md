@@ -5,6 +5,11 @@ This project adheres to [Semantic Versioning](http://semver.org/) for
 official project tracking. For technical reasons, the module version 
 number cannot be expressed using Semantic Versioning.
 
+## Unreleased
+- Adding CompareTo() method to custom object.
+- Adding Compare-SemanticVersion
+- Added Step-SemanticVersion 
+
 ## 0.5.0 - 2016-08-10
 ### Added
 - Added Test-SemanticVersion function to validate a semantic version string.
