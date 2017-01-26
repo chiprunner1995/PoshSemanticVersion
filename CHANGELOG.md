@@ -8,7 +8,8 @@ number cannot be expressed using Semantic Versioning.
 ## Unreleased
 - Adding CompareTo() method to custom object.
 - Adding Compare-SemanticVersion
-- Added Step-SemanticVersion 
+- Added Step-SemanticVersion
+- Starting to use C# class code because custom PSObject types cannot be compared correctly.
 
 ## 0.5.0 - 2016-08-10
 ### Added

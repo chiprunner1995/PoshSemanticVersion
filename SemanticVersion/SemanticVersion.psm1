@@ -1435,6 +1435,99 @@ function TestPesterModuleImport {
 
 #region Private variables
 
+
+# Using C# code because custom PSObject types cannot be compared correctly.
+[string] $csharpSourceCode = @'
+using System;
+using System.Text.RegularExpressions;
+
+public class SemanticVersion : IComparable
+{
+    private Regex preReleaseRegEx = new Regex(@"^(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    private string[] preRelease;
+    private string[] build;
+
+    public uint Major;
+    public uint Minor;
+    public uint Patch;
+
+    public string[] PreRelease
+    {
+        get
+        {
+            return preRelease;
+        }
+        set
+        {
+            foreach (string element in value)
+            {
+                if (!(preReleaseRegEx.IsMatch(element)))
+                {
+                    throw new System.ArgumentException(String.Format("Invalid PreRelease identifier \"{0}\".", element));
+                }
+            }
+
+            preRelease = value;
+        }
+    }
+
+    public string[] Build
+    {
+        get
+        {
+            return build;
+        }
+        set
+        {
+            build = value;
+        }
+    }
+
+    public SemanticVersion()
+    {
+        Major = 0;
+        Minor = 0;
+        Patch = 0;
+        PreRelease = new string[] { };
+        Build = new string[] { };
+    }
+
+    public int CompareTo(object obj)
+    {
+        return 0;
+    }
+
+    // Equals
+
+    // ToString
+
+    public override string ToString()
+    {
+        //string outputString = Major + "." + Minor + "." + Patch;
+        string outputString = String.Format("{0}.{1}.{2}", Major, Minor, Patch);
+
+        if (PreRelease.Length > 0)
+        {
+            string preReleaseString = String.Format("-{0}", String.Join(".", PreRelease));
+            //outputString += preReleaseString;
+            outputString = outputString + preReleaseString;
+        }
+
+        if (Build.Length > 0)
+        {
+            string buildString = String.Format("+{0}", String.Join(".", Build));
+            outputString += buildString;
+        }
+
+        return outputString;
+    }
+}
+
+'@
+
+
+
 [string] $SemanticVersionTypeName = 'CustomSemanticVersion'
 
 [string] $SemVerRegEx = '^(0|[1-9][0-9]*)' + 
@@ -1454,8 +1547,19 @@ function TestPesterModuleImport {
 
 #region Execution
 
+function New-TestSemVer {
+    [cmdletbinding()]
+    param ()
 
-Export-ModuleMember -Function @('New-SemanticVersion', 'Test-SemanticVersion', 'Compare-SemanticVersion', 'Step-SemanticVersion', 'Sort-SemanticVersion', 'Convert-SemanticVersionToSystemVersion', 'Convert-SystemVersionToSemanticVersion')
+    [SemanticVersion] $testSemVerObj = New-Object -TypeName SemanticVersion
+
+    $testSemVerObj
+}
+
+Add-Type -TypeDefinition $csharpSourceCode -Language CSharp
+
+
+#Export-ModuleMember -Function @('New-SemanticVersion', 'Test-SemanticVersion', 'Compare-SemanticVersion', 'Step-SemanticVersion', 'Sort-SemanticVersion', 'Convert-SemanticVersionToSystemVersion', 'Convert-SystemVersionToSemanticVersion')
 
 
 #endregion Execution
