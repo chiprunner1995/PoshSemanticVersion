@@ -509,7 +509,7 @@ function New-SemanticVersion {
             param (
                 [ValidateSet('Build', 'PreRelease', 'PrePatch', 'PreMinor', 'PreMajor', 'Patch', 'Minor', 'Major')]
                 [string]
-                $Type = 'PreRelease'
+                $Type = 'Build'
             )
 
             switch ($Type) {
@@ -1128,7 +1128,7 @@ function Step-SemanticVersion {
     This command converts the string '1.1.1' to the semantic version object equivalent of '1.2.0'.
 
 #>
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName='PreRelease')]
     [OutputType('CustomSemanticVersion')]
     param (
         # The number to be incremented.
@@ -1143,70 +1143,150 @@ function Step-SemanticVersion {
             }
         })]
         [object]
-        [Alias('Version','Number')]
+        [Alias('Version','SemanticVersion','SemVer')]
         $InputObject,
 
-        [Parameter(Position=0)]
+        [Parameter(ParameterSetName='Build')]
+        [switch]
+        $Build,
+
+        [Parameter(ParameterSetName='PreRelease')]
+        [Parameter(ParameterSetName='Patch')]
+        [Parameter(ParameterSetName='Minor')]
+        [Parameter(ParameterSetName='Major')]
+        [switch]
+        $PreRelease,
+
+        [Parameter(ParameterSetName='Patch')]
+        [switch]
+        $Patch,
+
+        [Parameter(ParameterSetName='Minor')]
+        [switch]
+        $Minor,
+
+        [Parameter(ParameterSetName='Major')]
+        [switch]
+        $Major
+    )
+
+    <#
+        ,
+
+        [Parameter(ParameterSetName='Element')]
         [ValidateSet('Build', 'PreRelease', 'PrePatch', 'PreMinor', 'PreMajor', 'Patch', 'Minor', 'Major')]
         [string]
         [Alias('Component')]
-        $Element = 'PreRelease'
-    )
+        $Element = 'Build'
+    #>
+
 
     $updatedSemVer = New-SemanticVersion -String $InputObject.ToString()
 
-    [bool] $IsExistingPreRelease = $false
-    [byte] $ExistingReleaseType = 0
 
-    if ($updatedSemVer.PreRelease.Length -gt 0) {
-        $IsExistingPreRelease = $true
+    #foreach ($key in $PSBoundParameters.Keys) {
+    #    Write-Host ('Parameter: {0}' -f $key) -ForegroundColor Green
+    #}
+    #
+    #return
+    #
+    #
+    #Write-Host 'Getting Parameter Set' -ForegroundColor Cyan
+    #Write-Host ($PSCmdlet.ParameterSetName) -ForegroundColor Cyan
+    #return
+
+
+    #[bool] $IsExistingPreRelease = $false
+    #[byte] $ExistingReleaseType = 0
+    #
+    #if ($updatedSemVer.PreRelease.Length -gt 0) {
+    #    $IsExistingPreRelease = $true
+    #}
+    #
+    #if ($updatedSemVer.Major -gt 0) {
+    #    $ExistingReleaseType = 3
+    #}
+    #
+    #if ($updatedSemVer.Minor -gt 0) {
+    #    $ExistingReleaseType = 2
+    #}
+    #
+    #if ($updatedSemVer.Patch -gt 0) {
+    #    $ExistingReleaseType = 1
+    #}
+
+
+
+
+
+    if ($PSBoundParameters.Keys -contains 'Build') {
+        $updatedSemVer.Increment('Build')
     }
-
-    if ($updatedSemVer.Major -gt 0) {
-        $ExistingReleaseType = 3
-    }
-
-    if ($updatedSemVer.Minor -gt 0) {
-        $ExistingReleaseType = 2
-    }
-
-    if ($updatedSemVer.Patch -gt 0) {
-        $ExistingReleaseType = 1
-    }
-
-    switch ($Element) {
-        'Build' {
-            $updatedSemVer.Increment('Build')
-        }
-
-        'PreRelease' {
-            $updatedSemVer.Increment('PreRelease')
-        }
-
-        'PrePatch' {
+    elseif ($PSBoundParameters.Keys -contains 'PreRelease') {
+        if ($PSBoundParameters.Keys -contains 'Patch') {
             $updatedSemVer.Increment('PrePatch')
         }
-
-        'PreMinor' {
+        elseif ($PSBoundParameters.Keys -contains 'Minor') {
             $updatedSemVer.Increment('PreMinor')
         }
-
-        'PreMajor' {
+        elseif ($PSBoundParameters.Keys -contains 'Major') {
             $updatedSemVer.Increment('PreMajor')
         }
-
-        'Patch' {
-            $updatedSemVer.Increment('Patch')
-        }
-
-        'Minor' {
-            $updatedSemVer.Increment('Minor')
-        }
-
-        'Major' {
-            $updatedSemVer.Increment('Major')
+        else {
+            $updatedSemVer.Increment('PreRelease')
         }
     }
+    elseif ($PSBoundParameters.Keys -contains 'Patch') {
+        $updatedSemVer.Increment('Patch')
+    }
+    elseif ($PSBoundParameters.Keys -contains 'Minor') {
+        $updatedSemVer.Increment('Minor')
+    }
+    elseif ($PSBoundParameters.Keys -contains 'Major') {
+        $updatedSemVer.Increment('Major')
+    }
+    else {
+        $updatedSemVer.Increment('Build')
+    }
+
+
+
+
+    #switch ($Element) {
+    #    'Build' {
+    #        $updatedSemVer.Increment('Build')
+    #    }
+    #
+    #    'PreRelease' {
+    #        $updatedSemVer.Increment('PreRelease')
+    #    }
+    #
+    #    'PrePatch' {
+    #        $updatedSemVer.Increment('PrePatch')
+    #    }
+    #
+    #    'PreMinor' {
+    #        $updatedSemVer.Increment('PreMinor')
+    #    }
+    #
+    #    'PreMajor' {
+    #        $updatedSemVer.Increment('PreMajor')
+    #    }
+    #
+    #    'Patch' {
+    #        $updatedSemVer.Increment('Patch')
+    #    }
+    #
+    #    'Minor' {
+    #        $updatedSemVer.Increment('Minor')
+    #    }
+    #
+    #    'Major' {
+    #        $updatedSemVer.Increment('Major')
+    #    }
+    #}
+
+
 
     $updatedSemVer
 }
@@ -1436,98 +1516,6 @@ function TestPesterModuleImport {
 #region Private variables
 
 
-# Using C# code because custom PSObject types cannot be compared correctly.
-[string] $csharpSourceCode = @'
-using System;
-using System.Text.RegularExpressions;
-
-public class SemanticVersion : IComparable
-{
-    private Regex preReleaseRegEx = new Regex(@"^(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
-    private string[] preRelease;
-    private string[] build;
-
-    public uint Major;
-    public uint Minor;
-    public uint Patch;
-
-    public string[] PreRelease
-    {
-        get
-        {
-            return preRelease;
-        }
-        set
-        {
-            foreach (string element in value)
-            {
-                if (!(preReleaseRegEx.IsMatch(element)))
-                {
-                    throw new System.ArgumentException(String.Format("Invalid PreRelease identifier \"{0}\".", element));
-                }
-            }
-
-            preRelease = value;
-        }
-    }
-
-    public string[] Build
-    {
-        get
-        {
-            return build;
-        }
-        set
-        {
-            build = value;
-        }
-    }
-
-    public SemanticVersion()
-    {
-        Major = 0;
-        Minor = 0;
-        Patch = 0;
-        PreRelease = new string[] { };
-        Build = new string[] { };
-    }
-
-    public int CompareTo(object obj)
-    {
-        return 0;
-    }
-
-    // Equals
-
-    // ToString
-
-    public override string ToString()
-    {
-        //string outputString = Major + "." + Minor + "." + Patch;
-        string outputString = String.Format("{0}.{1}.{2}", Major, Minor, Patch);
-
-        if (PreRelease.Length > 0)
-        {
-            string preReleaseString = String.Format("-{0}", String.Join(".", PreRelease));
-            //outputString += preReleaseString;
-            outputString = outputString + preReleaseString;
-        }
-
-        if (Build.Length > 0)
-        {
-            string buildString = String.Format("+{0}", String.Join(".", Build));
-            outputString += buildString;
-        }
-
-        return outputString;
-    }
-}
-
-'@
-
-
-
 [string] $SemanticVersionTypeName = 'CustomSemanticVersion'
 
 [string] $SemVerRegEx = '^(0|[1-9][0-9]*)' + 
@@ -1542,21 +1530,24 @@ public class SemanticVersion : IComparable
                              '(-(?<prerelease>(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*)(\.(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*))*))?' + 
                              '(\+(?<build>[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?$'
 
+New-Variable BUILD_RELEASE_TYPE ([int] 0) -Option Constant
+New-Variable PRERELEASE_TYPE ([int] 1) -Option Constant
+
+data releaseType {
+    @{
+        Build = 0
+        PreRelease = 1
+        Patch = 2
+        Minor = 3
+        Major = 4
+    }
+}
+
+
 #endregion Private variables
 
 
 #region Execution
-
-function New-TestSemVer {
-    [cmdletbinding()]
-    param ()
-
-    [SemanticVersion] $testSemVerObj = New-Object -TypeName SemanticVersion
-
-    $testSemVerObj
-}
-
-Add-Type -TypeDefinition $csharpSourceCode -Language CSharp
 
 
 #Export-ModuleMember -Function @('New-SemanticVersion', 'Test-SemanticVersion', 'Compare-SemanticVersion', 'Step-SemanticVersion', 'Sort-SemanticVersion', 'Convert-SemanticVersionToSystemVersion', 'Convert-SystemVersionToSemanticVersion')

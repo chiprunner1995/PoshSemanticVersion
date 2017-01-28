@@ -1,5 +1,21 @@
 # Design Notes for SemanticVersion Module
 
+## Overview
+
+TODO: Write overview
+
+## Project Roadmap
+
+- 1.0.0:
+  - Target PowerShell v2.0 compatibility
+  - New-SemanticVersion
+- 1.x.x:
+  - Start using C# class code because custom PSObject objects cannot inherit from IComparable interface to be compared correctly.
+- 2.0.0:
+  - Target PowerShell v3.0 features.
+- x.0.0:
+  - PowerShell version 5.0 classes.
+
 Need a way to initiate a specific change type. "Start-SemanticVersion"
 
 

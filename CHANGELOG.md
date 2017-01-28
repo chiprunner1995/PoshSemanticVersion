@@ -5,11 +5,11 @@ This project adheres to [Semantic Versioning](http://semver.org/) for
 official project tracking. For technical reasons, the module version 
 number cannot be expressed using Semantic Versioning.
 
-## Unreleased
-- Adding CompareTo() method to custom object.
-- Adding Compare-SemanticVersion
-- Added Step-SemanticVersion
-- Starting to use C# class code because custom PSObject types cannot be compared correctly.
+## 0.6.0 - 2017-01-27
+### Added
+- CompareTo() method to custom object.
+- Compare-SemanticVersion
+- Step-SemanticVersion
 
 ## 0.5.0 - 2016-08-10
 ### Added
