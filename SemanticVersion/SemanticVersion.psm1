@@ -1470,7 +1470,7 @@ function Convert-SystemVersionToSemanticVersion {
         # A version in System.Version format.
         [Parameter(Mandatory=$true,
                    ValueFromPipeline=$true,
-                   Position=0)]
+                   ValueFromPipelineByPropertyName=$true)]
         [version]
         $Version
     )
