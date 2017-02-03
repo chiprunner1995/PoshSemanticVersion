@@ -982,6 +982,11 @@ function Compare-SemanticVersion {
 
     This command shows the results of comparing two semantic version numbers that are exactly equal in precedence, even if they have different build numbers.
 
+.NOTES
+    To sort a collection of semantic version numbers based on the semver.org precedence rules
+
+        Sort-Object -Property Major,Minor,Patch,@{e = {$_.PreRelease -eq ''}; Ascending = $true},PreRelease,Build
+
 #>
     [CmdletBinding()]
     [OutputType([psobject])]
@@ -1472,19 +1477,27 @@ function Convert-SystemVersionToSemanticVersion {
                    ValueFromPipeline=$true,
                    ValueFromPipelineByPropertyName=$true)]
         [version]
-        $Version
+        $Version,
+
+        # Specifies that if the System.Version has both a Build number and a Revision number, the build number will be used for setting the Semantic Version Patch version.
+        # If not specified, the default behavior is to use the Revision number for the Patch version.
+        [switch]
+        $ConvertBuildToPatch
     )
 
     [int] $SemVerPatch = 0
     [string] $SemVerPreRelease = ''
     [string] $SemVerBuild      = ''
 
-    if ($Version.Revision -lt 0) {
+    if ($Version.Revision -le 0) {
         $SemVerPatch = 0
 
         if ($Version.Build -ge 0) {
             $SemVerPatch = [int] $Version.Build
         }
+    }
+    elseif ($ConvertBuildToPatch) {
+        $SemVerPatch = [int] $Version.Build
     }
     else {
         $SemVerPatch = $Version.Revision

@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/) for
 official project tracking. For technical reasons, the module version 
 number cannot be expressed using Semantic Versioning.
 
+## 0.8.0 - 2017-02-03
+### Added
+- "-ConvertBuildToPatch" switch to the "Convert-SystemVersionToSemanticVersion" function. If specified, for a system version that has both a Build number and Revision number, the Build number will be used for the new Semantic Version Patch number. Without this switch, the Revision number would be used.
+
 ## 0.7.0 - 2017-02-03
 ### Removed
 - Sort-SemanticVersion function because the "sort" verb is not an approved verb for PowerShell commands.
