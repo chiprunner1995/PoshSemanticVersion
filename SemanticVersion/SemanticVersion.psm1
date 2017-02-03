@@ -1038,52 +1038,52 @@ function Compare-SemanticVersion {
 }
 
 
-function Sort-SemanticVersion {
-<#
-.Synopsis
-    Sorts a series of Semantic Versions
-
-.DESCRIPTION
-    The Sort-SemanticVersion function sorts a series of Semantic Version numbers based on the Semantic Version 2.0 specification's precedence rules.
-
-.EXAMPLE
-
-
-.EXAMPLE
-
-#>
-    [CmdletBinding()]
-    [OutputType([psobject[]])]
-    param (
-        # Specifies the version used as a reference for comparison.
-        [Parameter(Mandatory=$true,
-                   ValueFromPipeline=$true)]
-        [ValidateScript({
-            if (Test-SemanticVersion -Version $_.ToString()) {
-                $true
-            }
-            else {
-                throw 'Version is not a valid semantic version.'
-            }
-        })]
-        [psobject[]]
-        $Version
-    )
-
-    begin {
-        $outputCollection = @()
-    }
-
-    process {
-        foreach ($subObject in $Version) {
-            $outputCollection += New-SemanticVersion -String ($subObject.ToString())
-        }
-    }
-
-    end {
-        $outputCollection | Sort-Object -Property Major,Minor,Patch,@{e = {$_.PreRelease -eq ''}; Ascending = $true},PreRelease,Build
-    }
-}
+#function Sort-SemanticVersion {
+#<#
+#.Synopsis
+#    Sorts a series of Semantic Versions
+#
+#.DESCRIPTION
+#    The Sort-SemanticVersion function sorts a series of Semantic Version numbers based on the Semantic Version 2.0 specification's precedence rules.
+#
+#.EXAMPLE
+#
+#
+#.EXAMPLE
+#
+##>
+#    [CmdletBinding()]
+#    [OutputType([psobject[]])]
+#    param (
+#        # Specifies the version used as a reference for comparison.
+#        [Parameter(Mandatory=$true,
+#                   ValueFromPipeline=$true)]
+#        [ValidateScript({
+#            if (Test-SemanticVersion -Version $_.ToString()) {
+#                $true
+#            }
+#            else {
+#                throw 'Version is not a valid semantic version.'
+#            }
+#        })]
+#        [psobject[]]
+#        $Version
+#    )
+#
+#    begin {
+#        $outputCollection = @()
+#    }
+#
+#    process {
+#        foreach ($subObject in $Version) {
+#            $outputCollection += New-SemanticVersion -String ($subObject.ToString())
+#        }
+#    }
+#
+#    end {
+#        $outputCollection | Sort-Object -Property Major,Minor,Patch,@{e = {$_.PreRelease -eq ''}; Ascending = $true},PreRelease,Build
+#    }
+#}
 
 
 function Step-SemanticVersion {
@@ -1550,7 +1550,7 @@ data releaseType {
 #region Execution
 
 
-#Export-ModuleMember -Function @('New-SemanticVersion', 'Test-SemanticVersion', 'Compare-SemanticVersion', 'Step-SemanticVersion', 'Sort-SemanticVersion', 'Convert-SemanticVersionToSystemVersion', 'Convert-SystemVersionToSemanticVersion')
+Export-ModuleMember -Function @('New-SemanticVersion', 'Test-SemanticVersion', 'Compare-SemanticVersion', 'Step-SemanticVersion','Convert-SemanticVersionToSystemVersion', 'Convert-SystemVersionToSemanticVersion')
 
 
 #endregion Execution

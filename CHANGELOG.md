@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/) for
 official project tracking. For technical reasons, the module version 
 number cannot be expressed using Semantic Versioning.
 
+## 0.7.0 - 2017-02-03
+### Removed
+- Sort-SemanticVersion function because the "sort" verb is not an approved verb for PowerShell commands.
+
 ## 0.6.0 - 2017-01-27
 ### Added
 - CompareTo() method to custom object.
