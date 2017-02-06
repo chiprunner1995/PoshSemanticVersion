@@ -1374,10 +1374,14 @@ function Convert-SemanticVersionToSystemVersion {
         [Alias('SemanticVersion', 'SemVer')]
         $InputObject,
 
-        # Specifies if the System.Version that is created is compatible with Semantic Version formatting.
-        # When this is specified, the Semantic Version Patch property will be assigned to the Version.Build property instead of being assigned to the System.Revision property, and the System.Revision property will be left empty.
+        # Specifies that the resulting System.Version object use all four identifiers (Major, Minor, Build, Revision). By default, the System.Version object only uses the first three identifers in order to meet semantic version specification.
         [switch]
-        $KeepSemanticVersion
+        $ExpandAllIdentifiers,
+
+        # Specifies that the resulting System.Version object will use the semantic version's patch number for the System.Version Build, and the semantic version's build number for the System.Version Revision. By default, the values are reversed.
+        [switch]
+        $ReverseBuildAndPatch
+
     )
 
     try {
@@ -1411,19 +1415,36 @@ function Convert-SemanticVersionToSystemVersion {
     }
 
     if ($SemVer.PreRelease.Length -gt 0) {
-        Write-Warning "System.Version format does not support pre-release versions. Semantic pre-release version `"$($SemVer.PreRelease)`" will not be saved to System.Version. It is recommended to convert the Semantic Version to a System.Version after the pre-release number is removed."
+        Write-Warning "System.Version format does not support pre-release versions. Semantic pre-release version `"$($SemVer.PreRelease)`" will not be saved to System.Version. The resulting System.Version will represent the previous non-pre-release Semantic Version."
+
+        [uint16] $major = $SemVer.Major
+        [uint16] $minor = $SemVer.Minor
+        [uint16] $patch = $SemVer.Patch
+
+        if ($patch -gt 0) {
+            $patch--
+        }
+        elseif ($minor -gt 0) {
+            $minor--
+        }
+        elseif ($major -gt 0) {
+            $major--
+        }
+
+        $SemVer = New-SemanticVersion -Major $major -Minor $minor -Patch $patch
     }
 
-    if ($KeepSemanticVersion) {
-        if ($SemVer.Patch -eq 0 -and ($SysVerBuild -ge 0)) {
-            New-Object -TypeName System.Version -ArgumentList @($SemVer.Major, $SemVer.Minor, $SysVerBuild)
+    
+    if ($ExpandAllIdentifiers -or $ReverseBuildAndPatch) {
+        if ($ReverseBuildAndPatch) {
+            New-Object -TypeName System.Version -ArgumentList @($SemVer.Major, $SemVer.Minor, $SemVer.Patch, $SysVerBuild)
         }
         else {
-            New-Object -TypeName System.Version -ArgumentList @($SemVer.Major, $SemVer.Minor, $SemVer.Patch)
+            New-Object -TypeName System.Version -ArgumentList @($SemVer.Major, $SemVer.Minor, $SysVerBuild, $SemVer.Patch)
         }
     }
     else {
-        New-Object -TypeName System.Version -ArgumentList @($SemVer.Major, $SemVer.Minor, $SysVerBuild, $SemVer.Patch)
+        New-Object -TypeName System.Version -ArgumentList @($SemVer.Major, $SemVer.Minor, $SemVer.Patch)
     }
 }
 
