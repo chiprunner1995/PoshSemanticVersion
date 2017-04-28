@@ -63,24 +63,21 @@ function New-SemanticVersion {
 
         # The major version must be incremented if any backwards incompatible changes are introduced to the public API.
         [Parameter(ParameterSetName='Components',
-                   Position=0,
-                   Mandatory=$true)]
+                   Position=0)]
         [ValidateRange(0, 2147483647)]
         [int32]
         $Major = 0,
 
         # The minor version must be incremented if new, backwards compatible functionality is introduced to the public API.
         [Parameter(ParameterSetName='Components',
-                   Position=1,
-                   Mandatory=$true)]
+                   Position=1)]
         [ValidateRange(0, 2147483647)]
         [int32]
         $Minor = 0,
 
         # The patch version must be incremented if only backwards compatible bug fixes are introduced. 
         [Parameter(ParameterSetName='Components',
-                   Position=2,
-                   Mandatory=$true)]
+                   Position=2)]
         [ValidateRange(0, 2147483647)]
         [int32]
         $Patch = 0,
@@ -192,7 +189,7 @@ function New-SemanticVersion {
         }
     }
 
-    $SemVerObj = New-Module -Name ($SemanticVersionTypeName + 'ObjectPrototype') -ArgumentList @($Major, $Minor, $Patch, $PreRelease, $Build) -AsCustomObject -ScriptBlock {
+    $SemVerObj = New-Module -Name ($SemanticVersionTypeName + 'DynamicModule') -ArgumentList @($Major, $Minor, $Patch, $PreRelease, $Build) -AsCustomObject -ScriptBlock {
         [CmdletBinding()]
         param (
             # An unsigned int.
@@ -497,10 +494,17 @@ function New-SemanticVersion {
 
         function GetPreRelease {
             [CmdletBinding()]
-            [OutputType([string])]
+            [OutputType([string],[int])]
             param ()
 
-            return $PreRelease
+            [int] $intVal = 0
+
+            if ([int]::TryParse($PreRelease, [ref] $intVal)) {
+                return $intVal
+            }
+            else {
+                return $PreRelease
+            }
         }
 
         function Increment {
@@ -740,11 +744,26 @@ function New-SemanticVersion {
             param (
                 [Parameter(Mandatory=$true)]
                 [ValidatePattern('^(|(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*)(\.(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*))*)$')]
-                [string]
-                $PreRelease
+                [object]
+                $NewPreRelease
             )
 
-            $Script:PreRelease = $PreRelease
+            $testVersion = New-Object psobject -Property @{
+                Major = $Major
+                Minor = $Minor
+                Patch = $Patch
+                PreRelease = [string] $NewPreRelease
+                Build = $Build
+            }
+
+            $testVersion.pstypenames.Insert(0, 'CustomSemanticVersion')
+
+            if ((CompareTo -Version $testVersion) -lt 0) {
+                $Script:PreRelease = $NewPreRelease
+            }
+            else {
+                throw 'You can only change the pre-release version to a higher precedence pre-release version.'
+            }
         }
 
         function ToString {
