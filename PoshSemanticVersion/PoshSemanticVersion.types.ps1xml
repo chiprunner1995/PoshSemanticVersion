@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Types>
+  <Type>
+    <Name>PoshSemanticVersion</Name>
+    <Members>
+      <MemberSet>
+        <Name>PSStandardMembers</Name>
+        <Members>
+          <PropertySet>
+            <Name>DefaultDisplayPropertySet</Name>
+            <ReferencedProperties>
+              <Name>Major</Name>
+              <Name>Minor</Name>
+              <Name>Patch</Name>
+              <Name>PreRelease</Name>
+              <Name>Build</Name>
+            </ReferencedProperties>
+          </PropertySet>
+        </Members>
+      </MemberSet>
+      <ScriptProperty>
+        <Name>Major</Name>
+        <GetScriptBlock>
+            $this.GetMajor()
+        </GetScriptBlock>
+      </ScriptProperty>
+      <ScriptProperty>
+        <Name>Minor</Name>
+        <GetScriptBlock>
+            $this.GetMinor()
+        </GetScriptBlock>
+      </ScriptProperty>
+      <ScriptProperty>
+        <Name>Patch</Name>
+        <GetScriptBlock>
+            $this.GetPatch()
+        </GetScriptBlock>
+      </ScriptProperty>
+      <ScriptProperty>
+        <Name>PreRelease</Name>
+        <GetScriptBlock>
+            [string]::Join('.', $this.GetPreRelease())
+        </GetScriptBlock>
+      </ScriptProperty>
+      <ScriptProperty>
+        <Name>Build</Name>
+        <GetScriptBlock>
+            [string]::Join('.', $this.GetBuild())
+        </GetScriptBlock>
+      </ScriptProperty>
+    </Members>
+  </Type>
+</Types>
