@@ -509,6 +509,25 @@ InModuleScope $moduleName {
             It 'Increments Minor'            {(Step-SemanticVersion $inputString Minor     ).ToString() | Should Be '1.2.0'  }
             It 'Increments Major'            {(Step-SemanticVersion $inputString Major     ).ToString() | Should Be '2.0.0'  }
         }
+
+        Context 'Incrementing PreRelease using label' {
+            It 'Increments PreRelease using label'       {(Step-SemanticVersion 1.1.1-0 PreRelease alpha     ).ToString()   | Should Be '1.1.1-alpha'  }
+            It 'Increments label of higher precedence'   {(Step-SemanticVersion 1.1.1-alpha.0 PreRelease beta).ToString()   | Should Be '1.1.1-beta'   }
+            It 'Throws if label is lower precedence'     {{(Step-SemanticVersion 1.1.1-beta PreRelease alpha  ).ToString()} | Should Throw             }
+            It 'Increments PreRelease Patch using label' {(Step-SemanticVersion 1.1.1-0 PrePatch alpha       ).ToString()   | Should Be '1.1.2-alpha'  }
+            It 'Increments PreRelease Minor using label' {(Step-SemanticVersion 1.1.1-0 PreMinor alpha       ).ToString()   | Should Be '1.2.0-alpha'  }
+            It 'Increments PreRelease Major using label' {(Step-SemanticVersion 1.1.1-0 PreMajor alpha       ).ToString()   | Should Be '2.0.0-alpha'  }
+            It 'Increments Patch ignoring the label'     {(Step-SemanticVersion 1.1.1-0 Patch alpha          ).ToString()   | Should Be '1.1.1'        }
+            It 'Increments Minor ignoring the label'     {(Step-SemanticVersion 1.1.1-0 Minor alpha          ).ToString()   | Should Be '1.2.0'        }
+            It 'Increments Major ignoring the label'     {(Step-SemanticVersion 1.1.1-0 Major alpha          ).ToString()   | Should Be '2.0.0'        }
+        }
+
+        Context 'Incrementing Build using label' {
+            It 'Increments Build using label'          {(Step-SemanticVersion 1.1.1 Build alpha     ).ToString() | Should Be '1.1.1+alpha'  }
+            It 'Increments Build using label'          {(Step-SemanticVersion 1.1.1+0 Build alpha   ).ToString() | Should Be '1.1.1+alpha'  }
+            It 'Increments label of higher precedence' {(Step-SemanticVersion 1.1.1+alpha Build beta).ToString() | Should Be '1.1.1+beta'   }
+            It 'Increments label of lower precedence'  {(Step-SemanticVersion 1.1.1+beta Build alpha).ToString() | Should Be '1.1.1+alpha'  }
+        }
     }
 
     Describe '(output object).CompareTo(value) method' {

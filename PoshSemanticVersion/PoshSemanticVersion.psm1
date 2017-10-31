@@ -1,78 +1,86 @@
-#region Private functions
+<#
+ .SYNOPSIS
+    Root module of the PoshSemanticVersion module.
+#>
+
+param ()
+
+# Initialization code is BELOW the function definitions.
+
+
+#region Internal functions
 
 
 function Split-SemanticVersion {
     <#
-    .Synopsis
-        Splits a semantic version string into a hashtable of semantic version components.
+     .SYNOPSIS
+        Short description
 
-    .Description
-        Splits a semantic version string into a hashtable of semantic version components.
+     .DESCRIPTION
+        Long description
 
-    .Notes
-        PreRelease and Build are stored as string arrays, without the dot separators.
+     .EXAMPLE
+        An example
+
+     .NOTES
+        General notes
     #>
     [CmdletBinding()]
-    [OutputType('hashtable', [hashtable])]
+    [OutputType([hashtable])]
     param (
-        # The string to split into separate components.
-        [Parameter(Mandatory=$true,
-                   ValueFromPipeline=$true)]
-        [ValidateScript({
-            if (Test-SemanticVersion -Version $_.ToString()) {
-                $true
-            }
-            else {
-                throw 'Input string value is not a valid semantic version.'
-            }
-        })]
-        [Alias('Version')]
-        $InputObject
+        # The string to split into semantic version components.
+        [Parameter(Mandatory=$true)]
+        [string]
+        [Alias('version')]
+        $string
     )
 
-    if ($InputObject.ToString() -match $NamedSemVerRegEx) {
-        [hashtable] $semVerHash = @{
-            Major = [int] $Matches['major']
-            Minor = [int] $Matches['minor']
-            Patch = [int] $Matches['patch']
-        }
+    [hashtable] $semVerHash = @{}
+
+    if ($string -match $NamedSemVerRegEx) {
+        $semVerHash['Major'] = $Matches['major']
+        $semVerHash['Minor'] = $Matches['minor']
+        $semVerHash['Patch'] = $Matches['patch']
 
         if ($Matches.ContainsKey('prerelease')) {
-            $semVerHash.Add('PreRelease', ([string[]] @($Matches['prerelease'] -split '\.')))
+            $semVerHash['PreRelease'] =  [string[]] @($Matches['prerelease'] -split '\.')
+        }
+        else {
+            $semVerHash['PreRelease'] = @()
         }
 
         if ($Matches.ContainsKey('build')) {
-            $semVerHash.Add('Build', ([string[]] @($Matches['build'] -split '\.')))
+            $semVerHash['Build'] = [string[]] @($Matches['build'] -split '\.')
         }
-
-        $semVerHash
+        else {
+            $semVerHash['Build'] = @()
+        }
     }
     else {
-        throw 'Unable to parse InputObject.'
+        throw 'Unable to parse string.'
     }
+
+    $semVerHash
 }
 
 
-#endregion Private functions
+#endregion Internal functions
 
 
+#region Exported functions
 
-#region Public functions
+[System.Collections.Generic.List[string]] $exportedFunctions = [Activator]::CreateInstance([System.Collections.Generic.List[string]])
 
-
-[string[]] $exportedFunctions = @()
-
-
-$exportedFunctions += 'New-SemanticVersion'
+$exportedFunctions.Add('New-SemanticVersion')
 function New-SemanticVersion {
     <#
-    .Synopsis
+     .SYNOPSIS
         Creates a new semantic version.
 
-    .DESCRIPTION
+     .DESCRIPTION
         Creates a new object representing a semantic version number.
 
-    .EXAMPLE
+     .EXAMPLE
         New-SemanticVersion -String '1.2.3-alpha.4+build.5'
 
 
@@ -84,7 +92,7 @@ function New-SemanticVersion {
 
         This command converts a valid Semantic Version string into a Semantic Version object. The output of the command is a Semantic Version object with the elements of the version split into separate properties.
 
-    .EXAMPLE
+     .EXAMPLE
         New-SemanticVersion -Major 1 -Minor 2 -Patch 3 -PreRelease alpha.4 -Build build.5
 
 
@@ -96,7 +104,7 @@ function New-SemanticVersion {
 
         This command take the Major, Minor, Patch, PreRelease, and Build parameters and produces the same output as the previous example.
 
-    .EXAMPLE
+     .EXAMPLE
         $semver = New-SemanticVersion -Major 1 -Minor 2 -Patch 3 -PreRelease alpha.4 -Build build.5
 
         $semver.ToString()
@@ -142,19 +150,19 @@ function New-SemanticVersion {
 
             foreach ($item in $eval) {
                 if ($item -match '\s') {
-                    throw 'PreRelease identifiers cannot contain spaces.'
+                    throw ($messages.MetadataIdentifierCannotContainSpaces -f $messages.PreReleaseLabelName)
                 }
 
                 if ($item -eq '') {
-                    throw 'PreRelease identifiers MUST not be empty.'
+                    throw ($messages.MetadataIdentifierCannotBeEmpty -f $messages.PreReleaseLabelName)
                 }
 
                 if ($item -notmatch '^[0-9A-Za-z-]+$') {
-                    throw 'PreRelease identifiers MUST comprise only ASCII alphanumerics and hyphen [0-9A-Za-z-].'
+                    throw ($messages.MetadataIdentifierCanOnlyContainAlphanumericsAndHyphen -f $messages.PreReleaseLabelName)
                 }
 
                 if ($item -match '^\d\d+$' -and ($item -like '0*')) {
-                    throw 'PreRelease identifiers MUST NOT include leading zeroes.'
+                    throw $messages.PreReleaseIdentifierCannotHaveLeadingZero
                 }
             }
 
@@ -176,15 +184,15 @@ function New-SemanticVersion {
 
             foreach ($item in $eval) {
                 if ($item -match '\s') {
-                    throw 'Build identifiers cannot contain spaces.'
+                    throw ($messages.MetadataIdentifierCannotContainSpaces -f $messages.BuildLabelName)
                 }
 
                 if ($item -eq '') {
-                    throw 'Build identifiers MUST NOT be empty.'
+                    throw ($messages.MetadataIdentifierCannotBeEmpty -f $messages.BuildLabelName)
                 }
 
                 if ($item -notmatch '^[0-9A-Za-z-]+$') {
-                    throw 'Build identifiers MUST comprise only ASCII alphanumerics and hyphen [0-9A-Za-z-].'
+                    throw ($messages.MetadataIdentifierCanOnlyContainAlphanumericsAndHyphen -f $messages.BuildLabelName)
                 }
             }
 
@@ -202,7 +210,7 @@ function New-SemanticVersion {
                 $true
             }
             else {
-                throw 'Input string value is not a valid semantic version.'
+                throw ($messages.ValueNotValidSemanticVersion -f 'InputObject')
             }
         })]
         [Alias('String', 'Version')]
@@ -229,9 +237,6 @@ function New-SemanticVersion {
     }
 
     switch ($PSCmdlet.ParameterSetName) {
-        'Elements' {
-        }
-
         'String' {
             [hashtable] $semVerHash = Split-SemanticVersion $InputObject.ToString()
 
@@ -259,6 +264,7 @@ function New-SemanticVersion {
         }
     }
 
+
     [psobject] $semVer = New-Module -Name ($customObjectTypeName + 'DynamicModule') -ArgumentList @($Major, $Minor, $Patch, $PreRelease, $Build) -AsCustomObject -ScriptBlock {
         [CmdletBinding()]
         param (
@@ -278,30 +284,35 @@ function New-SemanticVersion {
             $Patch = 0,
 
             # A string.
-            [ValidatePattern('^(|(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*)(\.(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*))*)$')]
+            #[ValidatePattern('^(|(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*)(\.(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*))*)$')]
             [string[]]
             $PreRelease = @(),
 
             # A string.
-            [ValidatePattern('^(|([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))$')]
+            #[ValidatePattern('^(|([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))$')]
             [string[]]
             $Build = @()
         )
 
         New-Variable -Name customObjectTypeName -Value PoshSemanticVersion -Option Constant
+        New-Variable -Name NamedSemVerRegEx -Value (
+            '^(?<major>(0|[1-9][0-9]*))' +
+            '\.(?<minor>(0|[1-9][0-9]*))' +
+            '\.(?<patch>(0|[1-9][0-9]*))' +
+            '(-(?<prerelease>(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*)(\.(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*))*))?' +
+            '(\+(?<build>[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?$'
+        ) -Option Constant
+        New-Variable -Name PreReleasePattern -Value '^(|(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*)(\.(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*))*)$' -Option Constant
+        New-Variable -Name BuildPattern -Value '^(|([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))$' -Option Constant
 
-        [string[]] $_preRelease = $PreRelease
-        [string[]] $_build = $Build
+        [System.Collections.Generic.List[string]] $exportedFunctions = [Activator]::CreateInstance([System.Collections.Generic.List[string]])
 
-
-
-        #Set-Variable -Name Major, Minor, Patch, PreRelease, Build -Option ReadOnly
-
+        $exportedFunctions.Add('CompareTo')
         function CompareTo {
             <#
-            .Synopsis
+             .SYNOPSIS
                 Compare this SemVerObj to another.
-            .Description
+             .DESCRIPTION
                 Return 0 if both objects are equal
                 Return 1 if this object is a higher precedence than the other.
                 Return -1 if this object is a lower precedence than the other.
@@ -316,7 +327,8 @@ function New-SemanticVersion {
                         $true
                     }
                     else {
-                        throw 'Input object type must be of type "PoshSemanticVersion".'
+                        #throw (New-Object -TypeName System.ArgumentException -ArgumentList @(($messages.ObjectNotOfType -f $customObjectTypeName)))
+                        throw (New-Object -TypeName System.ArgumentException -ArgumentList @('Invalid object type "{0}".' -f $_.GetType()))
                     }
                 })]
                 [psobject]
@@ -398,12 +410,133 @@ function New-SemanticVersion {
                 }
             }
 
-            return $returnValue
+            $returnValue
         }
 
+        function CompareVersions {
+            <#
+             .SYNOPSIS
+                Compare this version with a new string.
+             .DESCRIPTION
+                This is an internal implementation of CompareTo that does not require the Type name to match.
+
+                Return 0 if both objects are equal
+                Return 1 if this object is a higher precedence than the other.
+                Return -1 if this object is a lower precedence than the other.
+            #>
+            [CmdletBinding()]
+            [OutputType([int])]
+            param (
+                # The version to compare against.
+                [Parameter(Mandatory=$true)]
+                [string]
+                $DifferenceVersion
+            )
+
+            [int] $returnValue = 0
+
+            if ($DifferenceVersion -match $NamedSemVerRegEx) {
+                [hashtable] $difHash = @{}
+
+                $difHash['Major'] = [int] $Matches['major']
+                $difHash['Minor'] = [int] $Matches['minor']
+                $difHash['Patch'] = [int] $Matches['patch']
+                $difHash['PreRelease'] = [string[]] @()
+                $difHash['Build'] = [string[]] @()
+
+                if ($Matches.ContainsKey('preRelease')) {
+                    $difHash['PreRelease'] = [string[]] @($Matches['preRelease'] -split '\.')
+                }
+
+                if ($Matches.ContainsKey('build')) {
+                    $difHash['Bulid'] = [string[]] @($Matches['build'] -split '\.')
+                }
+            }
+            else {
+                throw (New-Object -TypeName System.ArgumentException -ArgumentList @('DifferenceVersion was invalid Semantic Version string.'))
+            }
+
+
+            if ($Major -gt $difHash.Major) {
+                $returnValue = 1
+            }
+            elseif ($Major -lt $difHash.Major) {
+                $returnValue = -1
+            }
+
+            if ($returnValue -eq 0) {
+                if ($Minor -gt $difHash.Minor) {
+                    $returnValue = 1
+                }
+                elseif ($Minor -lt $difHash.Minor) {
+                    $returnValue = -1
+                }
+            }
+
+            if ($returnValue -eq 0) {
+                if ($Patch -gt $difHash.Patch) {
+                    $returnValue = 1
+                }
+                elseif ($Patch -lt $difHash.Patch) {
+                    $returnValue = -1
+                }
+            }
+
+            if ($returnValue -eq 0 -and ($PreRelease.Length -ne 0 -or ($difHash.PreRelease.Length -ne 0))) {
+                if ($PreRelease.Length -eq 0 -and ($difHash.PreRelease.Length -ne 0)) {
+                    $returnValue = 1
+                }
+                elseif ($PreRelease.Length -ne 0 -and ($difHash.PreRelease.Length -eq 0)) {
+                    $returnValue = -1
+                }
+            }
+
+            if ($returnValue -eq 0) {
+                #[string[]] $PreReleaseArray = [string]::Join('.', $PreRelease) -split '\.'
+                [string[]] $VersionPreRelease = $difHash.PreRelease
+                #[int] $shortestArray = $PreReleaseArray.Length
+                [int] $shortestArray = $PreRelease.Length
+
+                if ($shortestArray -gt $VersionPreRelease.Length) {
+                    $shortestArray = $VersionPreRelease.Length
+                }
+
+                for ([int] $i = 0; $i -lt $shortestArray; $i++) {
+                    if ($PreRelease[$i] -notmatch '^[0-9]+$' -and ($VersionPreRelease[$i] -match '^[0-9]+$')) {
+                        $returnValue = 1
+                    }
+                    elseif ($PreRelease[$i] -match '^[0-9]+$' -and ($VersionPreRelease[$i] -notmatch '^[0-9]+$')) {
+                        $returnValue = -1
+                    }
+                    elseif ($PreRelease[$i] -gt $VersionPreRelease[$i]) {
+                        $returnValue = 1
+                    }
+                    elseif ($PreRelease[$i] -lt $VersionPreRelease[$i]) {
+                        $returnValue = -1
+                    }
+
+                    if ($returnValue -ne 0) {
+                        break
+                    }
+                }
+
+                if ($returnValue -eq 0) {
+                    if ($PreRelease.Length -gt $VersionPreRelease.Length) {
+                        $returnValue = 1
+                    }
+                    elseif ($PreRelease.Length -lt $VersionPreRelease.Length) {
+                        $returnValue = -1
+                    }
+                }
+            }
+
+            $returnValue
+        }
+
+        $exportedFunctions.Add('CompatibleWith')
         function CompatibleWith {
             <#
-            .Synopsis
+             .SYNOPSIS
                 Test if the current version is compatible with the parameter argument version.
             #>
             [CmdletBinding()]
@@ -423,44 +556,45 @@ function New-SemanticVersion {
                 $Version
             )
 
-            [bool] $IsCompatible = $true
+            [bool] $isCompatible = $true
 
             if ((CompareTo -Version $Version) -eq 0) {
-                $IsCompatible = $true
+                $isCompatible = $true
             }
             elseif ($Major -eq 0) {
-                $IsCompatible = $false
+                $isCompatible = $false
             }
             elseif ($Major -ne $Version.Major) {
-                $IsCompatible = $false
+                $isCompatible = $false
             }
             #elseif ([string]::Join('.', $PreRelease) -ne [string]::Join('.', $Version.GetPreRelease())) {
             elseif ($PreRelease.Length -ne 0 -and $Version.GetPreRelease().Length -ne 0) {
                 if ([string]::Join('.', $PreRelease) -ne [string]::Join('.', $Version.GetPreRelease())) {
-                    $IsCompatible = $false
+                    $isCompatible = $false
                 }
                 else {
                     if ($Major -ne $Version.Major) {
-                        $IsCompatible = $false
+                        $isCompatible = $false
                     }
                     if ($Minor -ne $Version.Minor) {
-                        $IsCompatible = $false
+                        $isCompatible = $false
                     }
                     if ($Patch -ne $Version.Patch) {
-                        $IsCompatible = $false
+                        $isCompatible = $false
                     }
                 }
             }
             elseif ($PreRelease.Length -ne 0 -or $Version.GetPreRelease().Length -ne 0) {
-                $IsCompatible = $false
+                $isCompatible = $false
             }
 
-            return $IsCompatible
+            $isCompatible
         }
 
+        $exportedFunctions.Add('Equals')
         function Equals {
             <#
-            .Synopsis
+             .SYNOPSIS
                 Determine if this semver object is equal in precedence to another semver object.
             #>
             [CmdletBinding()]
@@ -476,90 +610,81 @@ function New-SemanticVersion {
                         throw 'Input object type must be of type "PoshSemanticVersion".'
                     }
                 })]
-                [psobject]
                 $Version
             )
 
             (CompareTo -Version $Version) -eq 0
         }
 
+        $exportedFunctions.Add('GetBuild')
         function GetBuild {
             <#
-            .Synopsis
+             .SYNOPSIS
                 Returns the build element as a string array.
             #>
             [CmdletBinding()]
             [OutputType([string[]])]
             param ()
 
-            return $Build
+            $Build
         }
 
-        #function GetHashCode {
-        #    [CmdletBinding()]
-        #    [OutputType([int])]
-        #    param ()
-        #    [int] $hash = 13
-        #
-        #    $hash = ($hash * 7) + $Major.GetHashCode()
-        #    $hash = ($hash * 7) + $Minor.GetHashCode()
-        #    $hash = ($hash * 7) + $Patch.GetHashCode()
-        #    $hash = ($hash * 7) + $PreRelease.GetHashCode()
-        #
-        #    return $hash
-        #}
-
+        $exportedFunctions.Add('GetMajor')
         function GetMajor {
             <#
-            .Synopsis
+             .SYNOPSIS
                 Returns the major element of the version.
             #>
             [CmdletBinding()]
             [OutputType([int])]
             param ()
 
-            return $Major
+            $Major
         }
 
+        $exportedFunctions.Add('GetMinor')
         function GetMinor {
             <#
-            .Synopsis
+             .SYNOPSIS
                 Returns the minor element of the version.
             #>
             [CmdletBinding()]
             [OutputType([int])]
             param ()
 
-            return $Minor
+            $Minor
         }
 
+        $exportedFunctions.Add('GetPatch')
         function GetPatch {
             <#
-            .Synopsis
+             .SYNOPSIS
                 Returns the patch element of the version.
             #>
             [CmdletBinding()]
             [OutputType([int])]
             param ()
 
-            return $Patch
+            $Patch
         }
 
+        $exportedFunctions.Add('GetPreRelease')
         function GetPreRelease {
             <#
-            .Synopsis
+             .SYNOPSIS
                 Returns the prerelease element as a string array.
             #>
             [CmdletBinding()]
             [OutputType([string[]])]
             param ()
 
-            return $PreRelease
+            $PreRelease
         }
 
+        $exportedFunctions.Add('Increment')
         function Increment {
             <#
-            .Synopsis
+             .SYNOPSIS
                 Increments the version by the specifield release level.
             #>
             [CmdletBinding()]
@@ -567,14 +692,41 @@ function New-SemanticVersion {
             param (
                 [ValidateSet('Build', 'PreRelease', 'PrePatch', 'PreMinor', 'PreMajor', 'Patch', 'Minor', 'Major')]
                 [string]
-                $Level = 'PreRelease'
+                $Level = 'PreRelease',
+
+                [string]
+                $Label
             )
 
             [int] $numericValue = 0
 
+            if ($PSBoundParameters.ContainsKey('Label')) {
+                switch -Wildcard ($Level) {
+                    'Build' {
+                        if ($Label -notmatch $BuildPattern) {
+                            throw (New-Object -TypeName System.ArgumentException -ArgumentList @('Invalid Build label specified.'))
+                        }
+                    }
+
+                    'Pre*' {
+                        if ($Label -notmatch $PreReleasePattern) {
+                            throw (New-Object -TypeName System.ArgumentException -ArgumentList @('Invalid PreRelease label specified.'))
+                        }
+                    }
+
+                    default {
+                        Write-Warning -Message 'The Label parameter is only used when combined with a Level parameter value of Build, PreRelease, PreMajor, PreMinor, or PrePatch. It will be ignored.'
+                    }
+                }
+            }
+
             switch ($Level) {
                 'Build' {
-                    if ($Build.Length -eq 0) {
+                    # TODO: Use SetBuild() to validate input.
+                    if ($PSBoundParameters.ContainsKey('Label') -and $Label -match $BuildPattern) {
+                        $Script:Build = @($Label -split '\.')
+                    }
+                    elseif ($Build.Length -eq 0) {
                         $Script:Build = @('0')
                     }
                     else {
@@ -588,12 +740,29 @@ function New-SemanticVersion {
                 }
 
                 'PreRelease' {
+                    # TODO: Use SetPreRelease() to validate input.
+
                     if ($PreRelease.Length -eq 0) {
                         $Script:Patch++
-                        $Script:PreRelease = @('0')
+
+                        if ($PSBoundParameters.ContainsKey('Label')) {
+                            $Script:PreRelease = @($Label -split '\.')
+                        }
+                        else {
+                            $Script:PreRelease = @('0')
+                        }
                     }
                     else {
-                        if (-not ($PreRelease[-1].Length -gt 1 -and $PreRelease[-1] -like '0*') -and [int]::TryParse($PreRelease[-1], [ref] $numericValue)) {
+                        if ($PSBoundParameters.ContainsKey('Label')) {
+                            # If there is an existing prerelease label, the new label must be of a higher precedence.
+                            if ((CompareVersions -DifferenceVersion ('{0}.{1}.{2}-{3}' -f $Major, $Minor, $Patch, $Label)) -lt 0) {
+                                $Script:PreRelease = @($Label -split '\.')
+                            }
+                            else {
+                                throw (New-Object -TypeName System.ArgumentOutOfRangeException -ArgumentList @('Label', 'New prerelease label is must be of a higher precedence than existing prerelease label.'))
+                            }
+                        }
+                        elseif (-not ($PreRelease[-1].Length -gt 1 -and $PreRelease[-1] -like '0*') -and [int]::TryParse($PreRelease[-1], [ref] $numericValue)) {
                             $Script:PreRelease[-1] = [string] ++$numericValue
                         }
                         else {
@@ -605,14 +774,24 @@ function New-SemanticVersion {
                 'PrePatch' {
                     $Script:PreRelease = @()
                     $Script:Patch++
-                    $Script:PreRelease = @('0')
+                    if ($PSBoundParameters.ContainsKey('Label')) {
+                        $Script:PreRelease = @($Label -split '\.')
+                    }
+                    else {
+                        $Script:PreRelease = @('0')
+                    }
                 }
 
                 'PreMinor' {
                     $Script:PreRelease = @()
                     $Script:Patch = 0
                     $Script:Minor++
-                    $Script:PreRelease = @('0')
+                    if ($PSBoundParameters.ContainsKey('Label')) {
+                        $Script:PreRelease = @($Label -split '\.')
+                    }
+                    else {
+                        $Script:PreRelease = @('0')
+                    }
                 }
 
                 'PreMajor' {
@@ -620,7 +799,12 @@ function New-SemanticVersion {
                     $Script:Patch = 0
                     $Script:Minor = 0
                     $Script:Major++
-                    $Script:PreRelease = @('0')
+                    if ($PSBoundParameters.ContainsKey('Label')) {
+                        $Script:PreRelease = @($Label -split '\.')
+                    }
+                    else {
+                        $Script:PreRelease = @('0')
+                    }
                 }
 
                 'Patch' {
@@ -656,7 +840,12 @@ function New-SemanticVersion {
             }
         }
 
+        $exportedFunctions.Add('SetBuild')
         function SetBuild {
+            <#
+             .SYNOPSIS
+                Set the build version
+            #>
             [CmdletBinding()]
             [OutputType([void])]
             param (
@@ -669,9 +858,10 @@ function New-SemanticVersion {
             $Script:Build = $Build
         }
 
+        $exportedFunctions.Add('ToString')
         function ToString {
             <#
-            .Synopsis
+             .SYNOPSIS
                 Return a string representation of this object.
             #>
             [CmdletBinding()]
@@ -689,29 +879,9 @@ function New-SemanticVersion {
             )"
         }
 
-        [bool] $InDevelopmentMode = $false
-        if ($PreRelease.Length) {
-            Set-Variable -Name InDevelopmentMode -Value $true -Force
-        }
+        Export-ModuleMember -Function $exportedFunctions
 
-        Export-ModuleMember -Function @(
-            'CompareTo',
-            'Equals',
-            #'GetHashCode',
-            'CompatibleWith',
-            'ToString',
-            'Increment',
-            'GetMajor',
-            #'SetMajor',
-            'GetMinor',
-            #'SetMinor',
-            'GetPatch',
-            #'SetPatch',
-            'GetPreRelease',
-            #'SetPreRelease',
-            'GetBuild'
-            #'SetBuild',
-        )
+        Remove-Variable exportedFunctions
     }
 
     $semVer.pstypenames.Insert(0, $customObjectTypeName)
@@ -720,23 +890,23 @@ function New-SemanticVersion {
 }
 
 
-$exportedFunctions += 'Test-SemanticVersion'
+$exportedFunctions.Add('Test-SemanticVersion')
 function Test-SemanticVersion {
     <#
-    .Synopsis
+     .SYNOPSIS
         Tests if a string is a valid semantic version.
 
-    .DESCRIPTION
-        The Test-SemanticVersion function verifies that a supplied string meets the Semantic Version 2.0 specification.
+     .DESCRIPTION
+     The Test-SemanticVersion function verifies that a supplied string meets the Semantic Version 2.0 specification.
 
-    .EXAMPLE
+     .EXAMPLE
         Test-SemanticVersion '1.2.3-alpha.1+build.456'
 
         True
 
         This example shows the result if the provided string is a valid semantic version.
 
-    .EXAMPLE
+     .EXAMPLE
         Test-SemanticVersion '1.2.3-alpha.01+build.456'
 
         False
@@ -744,7 +914,7 @@ function Test-SemanticVersion {
         This example shows the result if the provided string is not a valid semantic version.
     #>
     [CmdletBinding()]
-    [OutputType('bool', [bool])]
+    [OutputType([bool])]
     param (
         # The semantic version string to validate.
         [Parameter(Mandatory=$true,
@@ -753,25 +923,20 @@ function Test-SemanticVersion {
         $Version
     )
 
-    if ($Version.ToString() -match $SemVerRegEx) {
-        $true
-    }
-    else {
-        $false
-    }
+    $Version -match $semVerRegEx
 }
 
 
-$exportedFunctions += 'Compare-SemanticVersion'
+$exportedFunctions.Add('Compare-SemanticVersion')
 function Compare-SemanticVersion {
     <#
-    .Synopsis
+     .SYNOPSIS
         Compares two semantic version numbers.
 
-    .DESCRIPTION
+     .DESCRIPTION
         The Test-SemanticVersion function compares two semantic version numbers and returns an object that contains the results of the comparison.
 
-    .EXAMPLE
+     .EXAMPLE
         Compare-SemanticVersion -ReferenceVersion '1.1.1' -DifferenceVersion '1.2.0'
 
         ReferenceVersion                  DifferenceVersion                 Precedence                                            AreCompatible
@@ -780,7 +945,7 @@ function Compare-SemanticVersion {
 
         This command show sthe results of compare two semantic version numbers that are not equal in precedence but are compatible.
 
-    .EXAMPLE
+     .EXAMPLE
         Compare-SemanticVersion -ReferenceVersion '0.1.1' -DifferenceVersion '0.1.0'
 
         ReferenceVersion                  DifferenceVersion                 Precedence                                            AreCompatible
@@ -789,7 +954,7 @@ function Compare-SemanticVersion {
 
         This command shows the results of comparing two semantic version numbers that are are not equal in precedence and are not compatible.
 
-    .EXAMPLE
+     .EXAMPLE
         Compare-SemanticVersion -ReferenceVersion '1.2.3' -DifferenceVersion '1.2.3-0'
 
         ReferenceVersion                  DifferenceVersion                 Precedence                                            AreCompatible
@@ -798,7 +963,7 @@ function Compare-SemanticVersion {
 
         This command shows the results of comparing two semantic version numbers that are are not equal in precedence and are not compatible.
 
-    .EXAMPLE
+     .EXAMPLE
         Compare-SemanticVersion -ReferenceVersion '1.2.3-4+5' -DifferenceVersion '1.2.3-4+5'
 
         ReferenceVersion                  DifferenceVersion                 Precedence                                            AreCompatible
@@ -807,7 +972,7 @@ function Compare-SemanticVersion {
 
         This command shows the results of comparing two semantic version numbers that are exactly equal in precedence.
 
-    .EXAMPLE
+     .EXAMPLE
         Compare-SemanticVersion -ReferenceVersion '1.2.3-4+5' -DifferenceVersion '1.2.3-4+6789'
 
         ReferenceVersion                  DifferenceVersion                 Precedence                                            AreCompatible
@@ -816,7 +981,7 @@ function Compare-SemanticVersion {
 
         This command shows the results of comparing two semantic version numbers that are exactly equal in precedence, even if they have different build numbers.
 
-    .NOTES
+     .NOTES
         To sort a collection of semantic version numbers based on the semver.org precedence rules
 
             Sort-Object -Property Major,Minor,Patch,@{e = {$_.PreRelease -eq ''}; Ascending = $true},PreRelease,Build
@@ -835,7 +1000,7 @@ function Compare-SemanticVersion {
                 $true
             }
             else {
-                throw 'ReferenceVersion is not a valid semantic version.'
+                throw ($messages.ValueNotValidSemanticVersion -f 'ReferenceVersion')
             }
         })]
         $ReferenceVersion,
@@ -849,7 +1014,7 @@ function Compare-SemanticVersion {
                 $true
             }
             else {
-                throw 'DifferenceVersion is not a valid semantic version.'
+                throw ($messages.ValueNotValidSemanticVersion -f 'DifferenceVersion')
             }
         })]
         $DifferenceVersion
@@ -860,11 +1025,18 @@ function Compare-SemanticVersion {
 
     [int] $precedence = $refVer.CompareTo($difVer)
 
-
-    New-Object -TypeName psobject |
-        Add-Member -MemberType NoteProperty -Name ReferenceVersion -Value $refVer.ToString() -PassThru |
-        Add-Member -MemberType NoteProperty -Name DifferenceVersion -Value $difVer.ToString() -PassThru |
-        Add-Member -MemberType NoteProperty -Name Precedence -Value $(
+    $result = [Activator]::CreateInstance([psobject])
+    $result.psobject.Members.Add([Activator]::CreateInstance([System.Management.Automation.PSNoteProperty], @(
+        'ReferenceVersion',
+        $refVer.ToString()
+    )))
+    $result.psobject.Members.Add([Activator]::CreateInstance([System.Management.Automation.PSNoteProperty], @(
+        'DifferenceVersion',
+        $difVer.ToString()
+    )))
+    $result.psobject.Members.Add([Activator]::CreateInstance([System.Management.Automation.PSNoteProperty], @(
+        'Precedence',
+        $(
             if ($precedence -eq 0) {
                 '='
             }
@@ -874,18 +1046,40 @@ function Compare-SemanticVersion {
             else {
                 '<'
             }
-        ) -PassThru |
-        Add-Member -MemberType NoteProperty -Name AreCompatible -Value $refVer.CompatibleWith($difVer) -PassThru
+        )
+    )))
+    $result.psobject.Members.Add([Activator]::CreateInstance([System.Management.Automation.PSNoteProperty], @(
+        'AreCompatible',
+        $refVer.CompatibleWith($difVer)
+    )))
+
+    $result
+
+    #New-Object -TypeName psobject |
+    #    Add-Member -MemberType NoteProperty -Name ReferenceVersion -Value $refVer.ToString() -PassThru |
+    #    Add-Member -MemberType NoteProperty -Name DifferenceVersion -Value $difVer.ToString() -PassThru |
+    #    Add-Member -MemberType NoteProperty -Name Precedence -Value $(
+    #        if ($precedence -eq 0) {
+    #            '='
+    #        }
+    #        elseif ($precedence -gt 0) {
+    #            '>'
+    #        }
+    #        else {
+    #            '<'
+    #        }
+    #    ) -PassThru |
+    #    Add-Member -MemberType NoteProperty -Name AreCompatible -Value $refVer.CompatibleWith($difVer) -PassThru
 }
 
 
-$exportedFunctions += 'Step-SemanticVersion'
+$exportedFunctions.Add('Step-SemanticVersion')
 function Step-SemanticVersion {
     <#
-    .Synopsis
+     .SYNOPSIS
         Increments a Semantic Version number.
 
-    .DESCRIPTION
+     .DESCRIPTION
         The Step-SemanticVersion function increments the elements of a semantic version number in a way that is compliant with the Semantic Version 2.0 specification.
 
         - Incrementing the Major number will reset the Minor number and the Patch number to 0. A pre-release version will be incremented to the normal version number.
@@ -898,7 +1092,7 @@ function Step-SemanticVersion {
 
         - Incrementing the Build number does not change any other parts of the version number.
 
-    .EXAMPLE
+     .EXAMPLE
         '1.1.1' | Step-SemanticVersion
 
         Major      : 1
@@ -909,7 +1103,7 @@ function Step-SemanticVersion {
 
         This command takes a semantic version string from the pipeline and increments the pre-release version. Because the element to increment was not specified, the default value of 'PreRelease was used'.
 
-    .EXAMPLE
+     .EXAMPLE
         Step-SemanticVersion -Version 1.1.1 -Level Minor
 
         Major      : 1
@@ -920,7 +1114,7 @@ function Step-SemanticVersion {
 
         This command converts the string '1.1.1' to the semantic version object equivalent of '1.2.0'.
 
-    .EXAMPLE
+     .EXAMPLE
         Step-SemanticVersion -v 1.1.1 -i patch
 
         Major      : 1
@@ -931,7 +1125,7 @@ function Step-SemanticVersion {
 
         This command converts the string '1.1.1' to the semantic version object equivalent of '1.1.2'. This example shows the use of the parameter aliases "v" and "i" for Version and Level (increment), respectively.
 
-    .EXAMPLE
+     .EXAMPLE
         Step-SemanticVersion 1.1.1 Major
 
         Major      : 2
@@ -942,7 +1136,7 @@ function Step-SemanticVersion {
 
         This command converts the string '1.1.1' to the semantic version object equivalent of '2.0.0'. This example shows the use of positional parameters.
 
-    .NOTES
+     .NOTES
         Test Results
 
             SemVer  Build PreRelease PrePatch PreMinor PreMajor Patch  Minor  Major
@@ -973,89 +1167,102 @@ function Step-SemanticVersion {
                 $true
             }
             else {
-                throw 'InputObject is not a valid semantic version.'
+                throw ($messages.ValueNotValidSemanticVersion -f 'InputObject')
             }
         })]
-        [Alias('InputObject', 'v')]
-        $Version,
+        [Alias('Version', 'v')]
+        $InputObject,
 
-        # The part of the version to increment.
+        # The desired increment type.
         # Valid values are Build, PreRelease, PrePatch, PreMinor, PreMajor, Patch, Minor, or Major.
         # The default value is PreRelease.
         [Parameter(Position=1)]
-        [ValidateSet('Build', 'PreRelease', 'PrePatch', 'PreMinor', 'PreMajor', 'Patch', 'Minor', 'Major')]
         [string]
-        [Alias('Release', 'Increment', 'i')]
-        $Level = 'PreRelease'
+        [ValidateSet('Build', 'PreRelease', 'PrePatch', 'PreMinor', 'PreMajor', 'Patch', 'Minor', 'Major')]
+        [Alias('Release', 'i')]
+        $Increment = 'PreRelease',
+
+        # The metadata label to use for an increment type of Build, PreRelease, PreMajor, PreMinor, or PrePatch.
+        # If specified, the value replaces the existing label. If not specified, the label will be incremented.
+        # This parameter is ignored for an increment type of Major, Minor, or Patch.
+        [Parameter(Position=2)]
+        [string]
+        [Alias('preid', 'Identifier')]
+        $Label
     )
 
-    $newSemVer = New-SemanticVersion -InputObject $Version
+    $newSemVer = New-SemanticVersion -InputObject $InputObject
 
-    switch ($Level) {
-        'Build' {
-            $newSemVer.Increment('Build')
+    if ($PSBoundParameters.ContainsKey('Label')) {
+        try {
+            $newSemVer.Increment($Increment, $Label)
         }
-
-        'PreRelease' {
-            $newSemVer.Increment('PreRelease')
+        catch [System.ArgumentOutOfRangeException],[System.ArgumentException] {
+            Write-Error -Exception $_.Exception -Category InvalidArgument -TargetObject $InputObject
+            return
         }
-
-        'PrePatch' {
-            $newSemVer.Increment('PrePatch')
+        catch {
+            Write-Error -Exception $_.Exception -Message ('Error using label "{0}" when incrementing version "{1}".' -f $Label, $InputObject.ToString()) -TargetObject $InputObject
+            return
         }
-
-        'PreMinor' {
-            $newSemVer.Increment('PreMinor')
-        }
-
-        'PreMajor' {
-            $newSemVer.Increment('PreMajor')
-        }
-
-        'Patch' {
-            $newSemVer.Increment('Patch')
-        }
-
-        'Minor' {
-            $newSemVer.Increment('Minor')
-        }
-
-        'Major' {
-            $newSemVer.Increment('Major')
-        }
-
-        default {
-            throw ('Invalid release level: "{0}".' -f $Level)
-        }
+    }
+    else {
+        $newSemVer.Increment($Increment)
     }
 
     $newSemVer
 }
 
 
-#endregion Public functions
+#endregion Exported functions
 
 
-#region Private variables
+#region Internal variables
 
 
 New-Variable -Name CustomObjectTypeName -Value PoshSemanticVersion -Option Constant
 
+New-Variable -Name SemVerRegEx -Value (
+    '^(0|[1-9][0-9]*)' +
+    '\.(0|[1-9][0-9]*)' +
+    '\.(0|[1-9][0-9]*)' +
+    '(-(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*)(\.(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*))*)?' +
+    '(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$'
+) -Option Constant
 
-[string] $SemVerRegEx = '^(0|[1-9][0-9]*)' +
-                        '\.(0|[1-9][0-9]*)' +
-                        '\.(0|[1-9][0-9]*)' +
-                        '(-(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*)(\.(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*))*)?' +
-                        '(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$'
+New-Variable -Name NamedSemVerRegEx -Value (
+    '^(?<major>(0|[1-9][0-9]*))' +
+    '\.(?<minor>(0|[1-9][0-9]*))' +
+    '\.(?<patch>(0|[1-9][0-9]*))' +
+    '(-(?<prerelease>(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*)(\.(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*))*))?' +
+    '(\+(?<build>[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?$'
+) -Option Constant
 
-[string] $NamedSemVerRegEx = '^(?<major>(0|[1-9][0-9]*))' +
-                             '\.(?<minor>(0|[1-9][0-9]*))' +
-                             '\.(?<patch>(0|[1-9][0-9]*))' +
-                             '(-(?<prerelease>(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*)(\.(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*))*))?' +
-                             '(\+(?<build>[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?$'
+[hashtable] $messages = data {
+    ConvertFrom-StringData @'
+    FileNotFoundError=The specified file was not found.
+    MetadataIdentifierCanOnlyContainAlphanumericsAndHyphen={0} identifiers MUST comprise only ASCII alphanumerics and hyphen [0-9A-Za-z-].
+    MetadataIdentifierCannotContainSpaces={0} identifier cannot contain spaces.
+    MetadataIdentifierCannotBeEmpty={0} identifiers MUST not be empty.
+    PreReleaseIdentifierCannotHaveLeadingZero=PreRelease identifiers MUST NOT include leading zeroes.
+    PreReleaseLabelName=PreRelease
+    BuildLabelName=Build
+    ValueNotValidSemanticVersion={0} value is not a valid semantic version.
+    ObjectNotOfType=Input object type must be of type "{0}".
+    InvalidReleaseLevel=Invalid release level: "{0}".
+'@
+}
 
+[hashtable] $localizedMessages = @{}
 
-#endregion Private variables
+#endregion Internal variables
 
+Import-LocalizedData -BindingVariable localizedMessages -Filename messages -ErrorAction SilentlyContinue
+
+foreach ($key in $localizedMessages.Keys) {
+    $messages[$key] = $localizedMessages[$key]
+}
 
 Export-ModuleMember -Function $exportedFunctions
+
+Remove-Variable exportedFunctions, localizedMessages, key

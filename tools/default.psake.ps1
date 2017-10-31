@@ -51,7 +51,9 @@ Task Test -depends Analyze, UnitTest -description 'Run tests.'
 
 
 Task Analyze -depends Build -requiredVariables SourceDir -description 'Check source code for best practices.' {
-    Import-Module -Name PSScriptAnalyzer -ErrorAction Stop
+    if (@(Get-Module | Select-Object -ExpandProperty Name) -notcontains 'PSScriptAnalyzer') {
+        Import-Module -Name PSScriptAnalyzer -ErrorAction Stop
+    }
     $analysisResults = Invoke-ScriptAnalyzer -Path $SourceDir -Recurse
 
     if ($analysisResults.Count -gt 0) {
@@ -68,7 +70,9 @@ Task UnitTest -depends Build -requiredVariables TestDir, TargetDir -description 
     Set-StrictMode -Version Latest
     Remove-Module $ProjectName -Force -ErrorAction SilentlyContinue
     Import-Module $BuildInfoFilePath -Force -ErrorAction Stop
-    Import-Module Pester -ErrorAction Stop
+    if (@(Get-Module | Select-Object -ExpandProperty Name) -notcontains 'Pester') {
+        Import-Module Pester -ErrorAction Stop
+    }
     $testResults = Invoke-Pester -PesterOption @{IncludeVSCodeMarker=$true} -PassThru -ErrorAction Stop
     Assert ($testResults.FailedCount -eq 0) ('Unit tests failed: {0}' -f $testResults.FailedCount)
     Remove-Module Pester -ErrorAction SilentlyContinue

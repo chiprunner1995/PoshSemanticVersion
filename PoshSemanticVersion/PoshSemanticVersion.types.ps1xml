@@ -21,32 +21,137 @@
       <ScriptProperty>
         <Name>Major</Name>
         <GetScriptBlock>
+            [OutputType([int])]
+            param ()
             $this.GetMajor()
         </GetScriptBlock>
+        <SetScriptBlock>
+            param (
+                [Parameter(Mandatory=$true)]
+                [int]
+                $Major
+            )
+
+            if ($Major -eq ($this.GetMajor() + 1)) {
+                $this.Increment('Major')
+            }
+            else {
+                $message = 'New value must be exactly 1 version higher than existing value.'
+                throw (New-Object -TypeName System.ArgumentException -ArgumentList @($message))
+            }
+        </SetScriptBlock>
       </ScriptProperty>
       <ScriptProperty>
         <Name>Minor</Name>
         <GetScriptBlock>
+            [OutputType([int])]
+            param ()
             $this.GetMinor()
         </GetScriptBlock>
+        <SetScriptBlock>
+            param (
+                [Parameter(Mandatory=$true)]
+                [int]
+                $Minor
+            )
+
+            if ($Minor -eq ($this.GetMinor() + 1)) {
+                $this.Increment('Minor')
+            }
+            else {
+                $message = 'New value must be exactly 1 version higher than existing value.'
+                throw (New-Object -TypeName System.ArgumentException -ArgumentList @($message))
+            }
+        </SetScriptBlock>
       </ScriptProperty>
       <ScriptProperty>
         <Name>Patch</Name>
         <GetScriptBlock>
+            [OutputType([int])]
+            param ()
             $this.GetPatch()
         </GetScriptBlock>
+        <SetScriptBlock>
+            param (
+                [Parameter(Mandatory=$true)]
+                [int]
+                $Patch
+            )
+
+            if ($Patch -eq ($this.GetPatch() + 1)) {
+                $this.Increment('Patch')
+            }
+            else {
+                $message = 'New value must be exactly 1 version higher than existing value.'
+                throw (New-Object -TypeName System.ArgumentException -ArgumentList @($message))
+            }
+        </SetScriptBlock>
       </ScriptProperty>
       <ScriptProperty>
         <Name>PreRelease</Name>
         <GetScriptBlock>
-            [string]::Join('.', $this.GetPreRelease())
+            #.SYNOPSIS
+            #   Returns the PreRelease label
+            #.DESCRIPTION
+            #   Returns the PreRelease label as either a string, or as an integer.
+            [OutputType([string], [int])]
+            param ()
+
+            [int] $numericValue = 0
+
+            if (@($this.GetPreRelease()).Length -eq 1 -and ([int]::TryParse(@($this.GetPreRelease())[0], [ref] $numericValue))) {
+                $numericValue
+            }
+            else {
+                [string]::Join('.', $this.GetPreRelease())
+            }
         </GetScriptBlock>
+        <SetScriptBlock>
+            param (
+                [Parameter(Mandatory=$true)]
+                $PreRelease
+            )
+
+            if ($this.PreRelease -is [int] -and ($PreRelease -is [int]) -and ($PreRelease -eq ($this.PreRelease + 1))) {
+                $this.Increment('PreRelease')
+            }
+            else {
+                $this.Increment('PreRelease', $PreRelease)
+            }
+        </SetScriptBlock>
       </ScriptProperty>
       <ScriptProperty>
         <Name>Build</Name>
         <GetScriptBlock>
-            [string]::Join('.', $this.GetBuild())
+            #.SYNOPSIS
+            #   Returns the Build label
+            #.DESCRIPTION
+            #   Returns the Build label as either a string, or as an integer.
+            [OutputType([string], [int])]
+            param ()
+
+            [int] $numericValue = 0
+
+            if (@($this.GetBuild()).Length -eq 1 -and ([int]::TryParse(@($this.GetBuild())[0], [ref] $numericValue))) {
+                $numericValue
+            }
+            else {
+                [string]::Join('.', $this.GetBuild())
+            }
         </GetScriptBlock>
+        <SetScriptBlock>
+            param (
+                [Parameter(Mandatory=$true)]
+                $Build
+            )
+
+            if ($this.Build -is [int] -and ($Build -is [int]) -and ($Build -eq ($this.Build + 1))) {
+                $this.Increment('Build')
+            }
+            else {
+                $this.Increment('Build', $Build)
+            }
+        </SetScriptBlock>
       </ScriptProperty>
     </Members>
   </Type>
