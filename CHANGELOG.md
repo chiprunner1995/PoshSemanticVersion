@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/) for
 official project tracking. For technical reasons, the module version
 number cannot be expressed using Semantic Versioning.
 
+## 1.1.0 - 2017-10-30
+### Features
+- Step-SemanticVersion can increment prerelease and build using optional label parameter.
+
 ## 1.0.0 - 2017-10-10
 ### Features
 - New-SemanticVersion: Creates a new semantic version.

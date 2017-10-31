@@ -14,21 +14,12 @@ param ()
 function Split-SemanticVersion {
     <#
      .SYNOPSIS
-        Short description
-
-     .DESCRIPTION
-        Long description
-
-     .EXAMPLE
-        An example
-
-     .NOTES
-        General notes
+        Splits up a Semantic Version string into a hastable.
     #>
     [CmdletBinding()]
     [OutputType([hashtable])]
     param (
-        # The string to split into semantic version components.
+        # The string to split into Semantic Version components.
         [Parameter(Mandatory=$true)]
         [string]
         [Alias('version')]
@@ -90,7 +81,8 @@ function New-SemanticVersion {
         PreRelease : alpha.4
         Build      : build.5
 
-        This command converts a valid Semantic Version string into a Semantic Version object. The output of the command is a Semantic Version object with the elements of the version split into separate properties.
+        This command converts a valid Semantic Version string into a Semantic Version object. The output of the command
+        is a Semantic Version object with the elements of the version split into separate properties.
 
      .EXAMPLE
         New-SemanticVersion -Major 1 -Minor 2 -Patch 3 -PreRelease alpha.4 -Build build.5
@@ -102,7 +94,8 @@ function New-SemanticVersion {
         PreRelease : alpha.4
         Build      : build.5
 
-        This command take the Major, Minor, Patch, PreRelease, and Build parameters and produces the same output as the previous example.
+        This command take the Major, Minor, Patch, PreRelease, and Build parameters and produces the same output as the
+        previous example.
 
      .EXAMPLE
         $semver = New-SemanticVersion -Major 1 -Minor 2 -Patch 3 -PreRelease alpha.4 -Build build.5
@@ -111,8 +104,8 @@ function New-SemanticVersion {
 
         1.2.3-alpha.4+build.5
 
-        This example shows that the object output from the previous command can be saved to a variable. Then by calling the object's ToString() method, a valid Semantic Version string is returned.
-
+        This example shows that the object output from the previous command can be saved to a variable. Then by
+        calling the object's ToString() method, a valid Semantic Version string is returned.
     #>
     [CmdletBinding(DefaultParameterSetName='Elements')]
     [OutputType('PoshSemanticVersion')]
@@ -136,8 +129,10 @@ function New-SemanticVersion {
         [int]
         $Patch = 0,
 
-        # A pre-release version indicates that the version is unstable and might not satisfy the intended compatibility requirements as denoted by its associated normal version.
-        # The value can be a string or an array of strings. If an array of strings is provided, the elements of the array will be joined using dot separators.
+        # A pre-release version indicates that the version is unstable and might not satisfy the intended compatibility
+        # requirements as denoted by its associated normal version.
+        # The value can be a string or an array of strings. If an array of strings is provided, the elements of the array
+        # will be joined using dot separators.
         [Parameter(ParameterSetName='Elements')]
         [AllowEmptyCollection()]
         [ValidateScript({
@@ -171,7 +166,8 @@ function New-SemanticVersion {
         $PreRelease = [string[]] @(),
 
         # The build metadata.
-        # The value can be a string or an array of strings. If an array of strings is provided, the elements of the array will be joined using dot separators.
+        # The value can be a string or an array of strings. If an array of strings is provided, the elements of the array
+        # will be joined using dot separators.
         [Parameter(ParameterSetName='Elements')]
         [AllowEmptyCollection()]
         [ValidateScript({
@@ -217,7 +213,8 @@ function New-SemanticVersion {
         $InputObject
     )
 
-    # Unfortunately, PSv2 does not think that $PreRelease or $Build are initialized if the user did not specify anything for the parameter, even if the default value is an empty array, so we have to do the following.
+    # Unfortunately, PSv2 does not think that $PreRelease or $Build are initialized if the user did not specify
+    # anything for the parameter, even if the default value is an empty array, so we have to do the following.
     if ($PSBoundParameters.ContainsKey('PreRelease')) {
         if ($PreRelease -isnot [array]) {
             [string[]] $PreRelease = @($PreRelease.ToString() -split '\.')
@@ -284,12 +281,10 @@ function New-SemanticVersion {
             $Patch = 0,
 
             # A string.
-            #[ValidatePattern('^(|(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*)(\.(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*))*)$')]
             [string[]]
             $PreRelease = @(),
 
             # A string.
-            #[ValidatePattern('^(|([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))$')]
             [string[]]
             $Build = @()
         )
@@ -313,9 +308,9 @@ function New-SemanticVersion {
              .SYNOPSIS
                 Compare this SemVerObj to another.
              .DESCRIPTION
-                Return 0 if both objects are equal
-                Return 1 if this object is a higher precedence than the other.
-                Return -1 if this object is a lower precedence than the other.
+                Returns 0 if both objects are equal
+                Returns 1 if this object is a higher precedence than the other.
+                Returns -1 if this object is a lower precedence than the other.
             #>
             [CmdletBinding()]
             [OutputType([int])]
@@ -372,9 +367,7 @@ function New-SemanticVersion {
             }
 
             if ($returnValue -eq 0) {
-                #[string[]] $PreReleaseArray = [string]::Join('.', $PreRelease) -split '\.'
                 [string[]] $VersionPreRelease = $Version.GetPreRelease()
-                #[int] $shortestArray = $PreReleaseArray.Length
                 [int] $shortestArray = $PreRelease.Length
 
                 if ($shortestArray -gt $VersionPreRelease.Length) {
@@ -418,11 +411,11 @@ function New-SemanticVersion {
              .SYNOPSIS
                 Compare this version with a new string.
              .DESCRIPTION
-                This is an internal implementation of CompareTo that does not require the Type name to match.
+                This is an internal implementation of CompareTo that does not require the Typename name to match.
 
-                Return 0 if both objects are equal
-                Return 1 if this object is a higher precedence than the other.
-                Return -1 if this object is a lower precedence than the other.
+                Returns 0 if both objects are equal
+                Returns 1 if this object is a higher precedence than the other.
+                Returns -1 if this object is a lower precedence than the other.
             #>
             [CmdletBinding()]
             [OutputType([int])]
@@ -492,9 +485,7 @@ function New-SemanticVersion {
             }
 
             if ($returnValue -eq 0) {
-                #[string[]] $PreReleaseArray = [string]::Join('.', $PreRelease) -split '\.'
                 [string[]] $VersionPreRelease = $difHash.PreRelease
-                #[int] $shortestArray = $PreReleaseArray.Length
                 [int] $shortestArray = $PreRelease.Length
 
                 if ($shortestArray -gt $VersionPreRelease.Length) {
@@ -567,7 +558,6 @@ function New-SemanticVersion {
             elseif ($Major -ne $Version.Major) {
                 $isCompatible = $false
             }
-            #elseif ([string]::Join('.', $PreRelease) -ne [string]::Join('.', $Version.GetPreRelease())) {
             elseif ($PreRelease.Length -ne 0 -and $Version.GetPreRelease().Length -ne 0) {
                 if ([string]::Join('.', $PreRelease) -ne [string]::Join('.', $Version.GetPreRelease())) {
                     $isCompatible = $false
@@ -597,7 +587,6 @@ function New-SemanticVersion {
              .SYNOPSIS
                 Determine if this semver object is equal in precedence to another semver object.
             #>
-            [CmdletBinding()]
             [OutputType([bool])]
             param (
                 # The number to be incremented.
@@ -622,7 +611,6 @@ function New-SemanticVersion {
              .SYNOPSIS
                 Returns the build element as a string array.
             #>
-            [CmdletBinding()]
             [OutputType([string[]])]
             param ()
 
@@ -635,7 +623,6 @@ function New-SemanticVersion {
              .SYNOPSIS
                 Returns the major element of the version.
             #>
-            [CmdletBinding()]
             [OutputType([int])]
             param ()
 
@@ -648,7 +635,6 @@ function New-SemanticVersion {
              .SYNOPSIS
                 Returns the minor element of the version.
             #>
-            [CmdletBinding()]
             [OutputType([int])]
             param ()
 
@@ -661,7 +647,6 @@ function New-SemanticVersion {
              .SYNOPSIS
                 Returns the patch element of the version.
             #>
-            [CmdletBinding()]
             [OutputType([int])]
             param ()
 
@@ -674,7 +659,6 @@ function New-SemanticVersion {
              .SYNOPSIS
                 Returns the prerelease element as a string array.
             #>
-            [CmdletBinding()]
             [OutputType([string[]])]
             param ()
 
@@ -687,13 +671,14 @@ function New-SemanticVersion {
              .SYNOPSIS
                 Increments the version by the specifield release level.
             #>
-            [CmdletBinding()]
             [OutputType([void])]
             param (
+                # The type on increment level to perform.
                 [ValidateSet('Build', 'PreRelease', 'PrePatch', 'PreMinor', 'PreMajor', 'Patch', 'Minor', 'Major')]
                 [string]
                 $Level = 'PreRelease',
 
+                # An optional label that can be used with a Level value of "Build" or any of the "Pre*" Levels.
                 [string]
                 $Label
             )
@@ -722,7 +707,6 @@ function New-SemanticVersion {
 
             switch ($Level) {
                 'Build' {
-                    # TODO: Use SetBuild() to validate input.
                     if ($PSBoundParameters.ContainsKey('Label') -and $Label -match $BuildPattern) {
                         $Script:Build = @($Label -split '\.')
                     }
@@ -740,8 +724,6 @@ function New-SemanticVersion {
                 }
 
                 'PreRelease' {
-                    # TODO: Use SetPreRelease() to validate input.
-
                     if ($PreRelease.Length -eq 0) {
                         $Script:Patch++
 
@@ -849,6 +831,7 @@ function New-SemanticVersion {
             [CmdletBinding()]
             [OutputType([void])]
             param (
+                # The new build label.
                 [Parameter(Mandatory=$true)]
                 [ValidatePattern('^(|([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))$')]
                 [string]
@@ -864,7 +847,6 @@ function New-SemanticVersion {
              .SYNOPSIS
                 Return a string representation of this object.
             #>
-            [CmdletBinding()]
             [OutputType([string])]
             param ()
 
@@ -894,34 +876,37 @@ $exportedFunctions.Add('Test-SemanticVersion')
 function Test-SemanticVersion {
     <#
      .SYNOPSIS
-        Tests if a string is a valid semantic version.
+        Tests if a string is a valid Semantic Version.
 
      .DESCRIPTION
-     The Test-SemanticVersion function verifies that a supplied string meets the Semantic Version 2.0 specification.
+        The Test-SemanticVersion function verifies that a supplied string meets the Semantic Version 2.0 specification.
 
      .EXAMPLE
         Test-SemanticVersion '1.2.3-alpha.1+build.456'
 
         True
 
-        This example shows the result if the provided string is a valid semantic version.
+        This example shows the result if the provided string is a valid Semantic Version.
 
      .EXAMPLE
         Test-SemanticVersion '1.2.3-alpha.01+build.456'
 
         False
 
-        This example shows the result if the provided string is not a valid semantic version.
+        This example shows the result if the provided string is not a valid Semantic Version.
     #>
     [CmdletBinding()]
     [OutputType([bool])]
     param (
-        # The semantic version string to validate.
+        # The Semantic Version string to validate.
         [Parameter(Mandatory=$true,
                    ValueFromPipeline=$true,
                    Position=0)]
         $Version
     )
+
+    #TODO: Provide verbose output to explain why the input version is invalid.
+    #TODO: Use process block because this function allows input from pipeline.
 
     $Version -match $semVerRegEx
 }
@@ -934,55 +919,60 @@ function Compare-SemanticVersion {
         Compares two semantic version numbers.
 
      .DESCRIPTION
-        The Test-SemanticVersion function compares two semantic version numbers and returns an object that contains the results of the comparison.
+        The Test-SemanticVersion function compares two semantic version numbers and returns an object that contains the
+        results of the comparison.
 
      .EXAMPLE
         Compare-SemanticVersion -ReferenceVersion '1.1.1' -DifferenceVersion '1.2.0'
 
-        ReferenceVersion                  DifferenceVersion                 Precedence                                            AreCompatible
-        ----------------                  -----------------                 ----------                                            -------------
-        1.1.1                             1.2.0                             <                                                              True
+        ReferenceVersion DifferenceVersion Precedence AreCompatible
+        ---------------- ----------------- ---------- -------------
+        1.1.1            1.2.0             <                   True
 
-        This command show sthe results of compare two semantic version numbers that are not equal in precedence but are compatible.
+        This command show sthe results of compare two semantic version numbers that are not equal in precedence but are
+        compatible.
 
      .EXAMPLE
         Compare-SemanticVersion -ReferenceVersion '0.1.1' -DifferenceVersion '0.1.0'
 
-        ReferenceVersion                  DifferenceVersion                 Precedence                                            AreCompatible
-        ----------------                  -----------------                 ----------                                            -------------
-        0.1.1                             0.1.0                             >                                                             False
+        ReferenceVersion DifferenceVersion Precedence AreCompatible
+        ---------------- ----------------- ---------- -------------
+        0.1.1            0.1.0             >                  False
 
-        This command shows the results of comparing two semantic version numbers that are are not equal in precedence and are not compatible.
+        This command shows the results of comparing two semantic version numbers that are are not equal in precedence
+        and are not compatible.
 
      .EXAMPLE
         Compare-SemanticVersion -ReferenceVersion '1.2.3' -DifferenceVersion '1.2.3-0'
 
-        ReferenceVersion                  DifferenceVersion                 Precedence                                            AreCompatible
-        ----------------                  -----------------                 ----------                                            -------------
-        1.2.3                             1.2.3-0                           >                                                             False
+        ReferenceVersion DifferenceVersion Precedence AreCompatible
+        ---------------- ----------------- ---------- -------------
+        1.2.3            1.2.3-0           >                  False
 
-        This command shows the results of comparing two semantic version numbers that are are not equal in precedence and are not compatible.
+        This command shows the results of comparing two semantic version numbers that are are not equal in precedence
+        and are not compatible.
 
      .EXAMPLE
         Compare-SemanticVersion -ReferenceVersion '1.2.3-4+5' -DifferenceVersion '1.2.3-4+5'
 
-        ReferenceVersion                  DifferenceVersion                 Precedence                                            AreCompatible
-        ----------------                  -----------------                 ----------                                            -------------
-        1.2.3-4+5                         1.2.3-4+5                         =                                                              True
+        ReferenceVersion DifferenceVersion Precedence AreCompatible
+        ---------------- ----------------- ---------- -------------
+        1.2.3-4+5        1.2.3-4+5         =                   True
 
         This command shows the results of comparing two semantic version numbers that are exactly equal in precedence.
 
      .EXAMPLE
         Compare-SemanticVersion -ReferenceVersion '1.2.3-4+5' -DifferenceVersion '1.2.3-4+6789'
 
-        ReferenceVersion                  DifferenceVersion                 Precedence                                            AreCompatible
-        ----------------                  -----------------                 ----------                                            -------------
-        1.2.3-4+5                         1.2.3-4+6789                      =                                                              True
+        ReferenceVersion DifferenceVersion Precedence AreCompatible
+        ---------------- ----------------- ---------- -------------
+        1.2.3-4+5        1.2.3-4+6789      =                   True
 
-        This command shows the results of comparing two semantic version numbers that are exactly equal in precedence, even if they have different build numbers.
+        This command shows the results of comparing two semantic version numbers that are exactly equal in precedence,
+        even if they have different build numbers.
 
      .NOTES
-        To sort a collection of semantic version numbers based on the semver.org precedence rules
+        To sort a collection of Semantic Version numbers based on the semver.org precedence rules
 
             Sort-Object -Property Major,Minor,Patch,@{e = {$_.PreRelease -eq ''}; Ascending = $true},PreRelease,Build
 
@@ -1049,27 +1039,12 @@ function Compare-SemanticVersion {
         )
     )))
     $result.psobject.Members.Add([Activator]::CreateInstance([System.Management.Automation.PSNoteProperty], @(
+        #TODO: This should read "IsCompatible", not "AreCompatible".
         'AreCompatible',
         $refVer.CompatibleWith($difVer)
     )))
 
     $result
-
-    #New-Object -TypeName psobject |
-    #    Add-Member -MemberType NoteProperty -Name ReferenceVersion -Value $refVer.ToString() -PassThru |
-    #    Add-Member -MemberType NoteProperty -Name DifferenceVersion -Value $difVer.ToString() -PassThru |
-    #    Add-Member -MemberType NoteProperty -Name Precedence -Value $(
-    #        if ($precedence -eq 0) {
-    #            '='
-    #        }
-    #        elseif ($precedence -gt 0) {
-    #            '>'
-    #        }
-    #        else {
-    #            '<'
-    #        }
-    #    ) -PassThru |
-    #    Add-Member -MemberType NoteProperty -Name AreCompatible -Value $refVer.CompatibleWith($difVer) -PassThru
 }
 
 
@@ -1080,16 +1055,16 @@ function Step-SemanticVersion {
         Increments a Semantic Version number.
 
      .DESCRIPTION
-        The Step-SemanticVersion function increments the elements of a semantic version number in a way that is compliant with the Semantic Version 2.0 specification.
+        The Step-SemanticVersion function increments the elements of a Semantic Version number in a way that is
+        compliant with the Semantic Version 2.0 specification.
 
-        - Incrementing the Major number will reset the Minor number and the Patch number to 0. A pre-release version will be incremented to the normal version number.
-
-        - Incrementing the Minor number will reset the Patch number to 0. A pre-release version will be incremented to the normal version number.
-
-        - Incrementing the Patch number does not change any other parts of the version number. A pre-release version will be incremented to the normal version number.
-
+        - Incrementing the Major number will reset the Minor number and the Patch number to 0. A pre-release version
+          will be incremented to the normal version number.
+        - Incrementing the Minor number will reset the Patch number to 0. A pre-release version will be incremented to
+          the normal version number.
+        - Incrementing the Patch number does not change any other parts of the version number. A pre-release version
+          will be incremented to the normal version number.
         - Incrementing the PreRelease number does not change any other parts of the version number.
-
         - Incrementing the Build number does not change any other parts of the version number.
 
      .EXAMPLE
@@ -1101,7 +1076,8 @@ function Step-SemanticVersion {
         PreRelease : 0
         Build      :
 
-        This command takes a semantic version string from the pipeline and increments the pre-release version. Because the element to increment was not specified, the default value of 'PreRelease was used'.
+        This command takes a semantic version string from the pipeline and increments the pre-release version. Because
+        the element to increment was not specified, the default value of 'PreRelease was used'.
 
      .EXAMPLE
         Step-SemanticVersion -Version 1.1.1 -Level Minor
@@ -1123,7 +1099,8 @@ function Step-SemanticVersion {
         PreRelease :
         Build      :
 
-        This command converts the string '1.1.1' to the semantic version object equivalent of '1.1.2'. This example shows the use of the parameter aliases "v" and "i" for Version and Level (increment), respectively.
+        This command converts the string '1.1.1' to the semantic version object equivalent of '1.1.2'. This example
+        shows the use of the parameter aliases "v" and "i" for Version and Level (increment), respectively.
 
      .EXAMPLE
         Step-SemanticVersion 1.1.1 Major
@@ -1134,31 +1111,31 @@ function Step-SemanticVersion {
         PreRelease :
         Build      :
 
-        This command converts the string '1.1.1' to the semantic version object equivalent of '2.0.0'. This example shows the use of positional parameters.
+        This command converts the string '1.1.1' to the semantic version object equivalent of '2.0.0'. This example
+        shows the use of positional parameters.
 
      .NOTES
-        Test Results
+        Values used when determining valid test results:
 
-            SemVer  Build PreRelease PrePatch PreMinor PreMajor Patch  Minor  Major
-            ------  ----- ---------- -------- -------- -------- ------ ------ -----
-            0.0.0-0       0.0.0-1    0.0.1-0  0.1.0-0  1.0.0-0  0.0.0  0.0.0  0.0.0
-            0.0.0         0.0.1-0    0.0.1-0  0.1.0-0  1.0.0-0  0.0.1  0.1.0  1.0.0
-            1.0.0-0       1.0.0-1    1.0.1-0  1.1.0-0  2.0.0-0  1.0.0  1.0.0  1.0.0
-            1.0.0         1.0.1-0    1.0.1-0  1.1.0-0  2.0.0-0  1.0.1  1.1.0  2.0.0
-            1.0.1-0       1.0.1-1    1.0.2-0  1.1.0-0  2.0.0-0  1.0.1  1.1.0  2.0.0
-            1.0.1         1.0.2-0    1.0.2-0  1.1.0-0  2.0.0-0  1.0.2  1.1.0  2.0.0
-            1.1.0-0       1.1.0-1    1.1.1-0  1.2.0-0  2.0.0-0  1.1.0  1.1.0  2.0.0
-            1.1.0         1.1.1-0    1.1.1-0  1.2.0-0  2.0.0-0  1.1.1  1.2.0  2.0.0
-            1.1.1-0       1.1.1-1    1.1.2-0  1.2.0-0  2.0.0-0  1.1.1  1.2.0  2.0.0
-            1.1.1         1.1.2-0    1.1.2-0  1.2.0-0  2.0.0-0  1.1.2  1.2.0  2.0.0
-            2.0.0-0       2.0.0-1    2.0.1-0  2.1.0-0  3.0.0-0  2.0.0  2.0.0  2.0.0
-            2.0.0         2.0.1-0    2.0.1-0  2.1.0-0  3.0.0-0  2.0.1  2.1.0  3.0.0
-
+            SemVer  PreRelease PrePatch PreMinor PreMajor Patch  Minor  Major
+            ------  ---------- -------- -------- -------- ------ ------ -----
+            0.0.0-0 0.0.0-1    0.0.1-0  0.1.0-0  1.0.0-0  0.0.0  0.0.0  0.0.0
+            0.0.0   0.0.1-0    0.0.1-0  0.1.0-0  1.0.0-0  0.0.1  0.1.0  1.0.0
+            1.0.0-0 1.0.0-1    1.0.1-0  1.1.0-0  2.0.0-0  1.0.0  1.0.0  1.0.0
+            1.0.0   1.0.1-0    1.0.1-0  1.1.0-0  2.0.0-0  1.0.1  1.1.0  2.0.0
+            1.0.1-0 1.0.1-1    1.0.2-0  1.1.0-0  2.0.0-0  1.0.1  1.1.0  2.0.0
+            1.0.1   1.0.2-0    1.0.2-0  1.1.0-0  2.0.0-0  1.0.2  1.1.0  2.0.0
+            1.1.0-0 1.1.0-1    1.1.1-0  1.2.0-0  2.0.0-0  1.1.0  1.1.0  2.0.0
+            1.1.0   1.1.1-0    1.1.1-0  1.2.0-0  2.0.0-0  1.1.1  1.2.0  2.0.0
+            1.1.1-0 1.1.1-1    1.1.2-0  1.2.0-0  2.0.0-0  1.1.1  1.2.0  2.0.0
+            1.1.1   1.1.2-0    1.1.2-0  1.2.0-0  2.0.0-0  1.1.2  1.2.0  2.0.0
+            2.0.0-0 2.0.0-1    2.0.1-0  2.1.0-0  3.0.0-0  2.0.0  2.0.0  2.0.0
+            2.0.0   2.0.1-0    2.0.1-0  2.1.0-0  3.0.0-0  2.0.1  2.1.0  3.0.0
     #>
     [CmdletBinding()]
     [OutputType('PoshSemanticVersion')]
     param (
-        # The semantic version number to be incremented.
+        # The Semantic Version number to be incremented.
         [Parameter(Mandatory=$true,
                    ValueFromPipeline=$true,
                    Position=0)]
