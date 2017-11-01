@@ -5,6 +5,14 @@ This project adheres to [Semantic Versioning](http://semver.org/) for
 official project tracking. For technical reasons, the module version
 number cannot be expressed using Semantic Versioning.
 
+## 1.2.0 - 2017-11-01
+### Features
+- Test-SemanticVersion provides useful feedback messages if a Semantic Version is invalid and the -Verbose switch
+  is used.
+
+### Fixes
+- Test-SemanticVersion correctly accepts pipeline input of more than one string.
+
 ## 1.1.0 - 2017-10-30
 ### Features
 - Step-SemanticVersion can increment prerelease and build using optional label parameter.
