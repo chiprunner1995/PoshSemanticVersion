@@ -14,7 +14,7 @@ Available Functions:
 
 - New-SemanticVersion: Creates a new semantic version number.
 - Test-SemanticVersion: Test if a string is a valid semantic version.
-- Compare-SemanticVersion: Compare to semantic versions to determine precedence.
+- Compare-SemanticVersion: Compare two semantic versions to determine precedence.
 - Step-SemanticVersion: Increment a semantic version based on the specified change type.
 
 License
