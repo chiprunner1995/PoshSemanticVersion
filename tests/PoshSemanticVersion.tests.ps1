@@ -513,7 +513,7 @@ InModuleScope $moduleName {
         Context 'Incrementing PreRelease using label' {
             It 'Increments PreRelease using label'       {(Step-SemanticVersion 1.1.1-0 PreRelease alpha     ).ToString()   | Should Be '1.1.1-alpha'  }
             It 'Increments label of higher precedence'   {(Step-SemanticVersion 1.1.1-alpha.0 PreRelease beta).ToString()   | Should Be '1.1.1-beta'   }
-            It 'Throws if label is lower precedence'     {{(Step-SemanticVersion 1.1.1-beta PreRelease alpha  ).ToString()} | Should Throw             }
+            It 'Throws if label is lower precedence'     {{Step-SemanticVersion 1.1.1-beta PreRelease alpha  }              | Should Throw 2>$null     }
             It 'Increments PreRelease Patch using label' {(Step-SemanticVersion 1.1.1-0 PrePatch alpha       ).ToString()   | Should Be '1.1.2-alpha'  }
             It 'Increments PreRelease Minor using label' {(Step-SemanticVersion 1.1.1-0 PreMinor alpha       ).ToString()   | Should Be '1.2.0-alpha'  }
             It 'Increments PreRelease Major using label' {(Step-SemanticVersion 1.1.1-0 PreMajor alpha       ).ToString()   | Should Be '2.0.0-alpha'  }

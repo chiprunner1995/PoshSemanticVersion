@@ -1,6 +1,6 @@
 <#
  .SYNOPSIS
-    Root module of the PoshSemanticVersion module.
+    PoshSemanticVersion module.
 #>
 
 param ()
@@ -61,6 +61,7 @@ function Split-SemanticVersion {
 #region Exported functions
 
 [System.Collections.Generic.List[string]] $exportedFunctions = [Activator]::CreateInstance([System.Collections.Generic.List[string]])
+
 
 $exportedFunctions.Add('New-SemanticVersion')
 function New-SemanticVersion {
@@ -175,7 +176,7 @@ function New-SemanticVersion {
                 [string[]] $eval = [string[]] $_
             }
             else {
-                [string[]] $eval = @($_.ToString() -split '\.')
+                [string[]] $eval = [string[]] @($_.ToString() -split '\.')
             }
 
             foreach ($item in $eval) {
@@ -202,11 +203,12 @@ function New-SemanticVersion {
                    Mandatory=$true,
                    Position=0)]
         [ValidateScript({
-            if (Test-SemanticVersion -Version $_) {
+            $er = Test-SemanticVersion -Version $_ -AsErrorRecord
+            if ($null -eq $er) {
                 $true
             }
             else {
-                throw ($messages.ValueNotValidSemanticVersion -f 'InputObject')
+                throw $er
             }
         })]
         [Alias('String', 'Version')]
@@ -881,6 +883,9 @@ function Test-SemanticVersion {
      .DESCRIPTION
         The Test-SemanticVersion function verifies that a supplied string meets the Semantic Version 2.0 specification.
 
+        If an invalid Semantic Version string is supplied to Test-SemanticVersion and the Verbose switch is used, the
+        verbose output stream will include additional details that may help when troubleshooting an invalid version.
+
      .EXAMPLE
         Test-SemanticVersion '1.2.3-alpha.1+build.456'
 
@@ -894,9 +899,31 @@ function Test-SemanticVersion {
         False
 
         This example shows the result if the provided string is not a valid Semantic Version.
+
+     .INPUTS
+        System.Object
+
+            Any objects used as input to this function are converted to strings before being processed.
+
+     .NOTES
+        Determining problems with invalid Semantic Version strings
+
+            1.  Validate normal version Major/Minor/Patch
+                a.  Validate element count is 3
+                b.  Validate not empty elements
+                c.  Validate non-negative integer values
+                d.  Validate no leading zeros
+            2.  Validate pre-release label
+                a.  Identifiers MUST NOT be empty
+                b.  Identifiers MUST comprise only ASCII alphanumerics and hyphen
+                c.  Numeric identifiers MUST NOT include leading zeroes
+            3.  Validate build label
+                a.  Identifiers MUST NOT be empty
+                b.  Identifiers MUST comprise only ASCII alphanumerics and hyphen
     #>
-    [CmdletBinding()]
-    [OutputType([bool])]
+    [CmdletBinding(DefaultParameterSetName='BoolOutput')]
+    [OutputType([bool], ParameterSetName='BoolOutput')]
+    [OutputType([System.Management.Automation.ErrorRecord], ParameterSetName='ErrorRecord')]
     param (
         # The Semantic Version string to validate.
         [Parameter(Mandatory=$true,
@@ -904,11 +931,17 @@ function Test-SemanticVersion {
                    Position=0)]
         [object[]]
         [Alias('Version')]
-        $InputObject
+        $InputObject,
+
+        # Indicates that this function returns ErrorRecord objects instead of boolean values.
+        [Parameter(Mandatory=$true,
+                   ParameterSetName='ErrorRecord')]
+        [switch]
+        $AsErrorRecord
     )
 
     begin {
-        [string] $normalVersionRegEx = '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$'
+        [string] $normalVersionPattern = '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$'
         [string] $preReleasePattern = '^(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*)(\.(0|[1-9][0-9]*|[0-9]+[A-Za-z-]+[0-9A-Za-z-]*|[A-Za-z-]+[0-9A-Za-z-]*))*$'
         [string] $buildPattern = '^[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*$'
     }
@@ -916,91 +949,154 @@ function Test-SemanticVersion {
     process {
         foreach ($item in $InputObject) {
             [string] $version = $item -as [string]
+            [bool] $isValid = $version -match $semVerRegEx
+            [string] $messageId = ''
+            [string] $message = ''
+            [string] $recommendedAction = ''
 
-            if ($version -match $semVerRegEx) {
-                $true
-                Write-Verbose ('"{0}" is a valid Semantic Version.' -f $version)
-            }
-            else {
-                $false
+            if ($isValid) {
+                $messageId = 'ValidSemanticVersion'
+                $message = $messages[$messageId] -f $version
+                $recommendedAction = ''
 
-                if ($VerbosePreference -ne 'SilentlyContinue') {
-                    [System.Collections.Generic.List[string]] $verboseMessage = New-Object -TypeName System.Collections.Generic.List[string]
-
-                    $verboseMessage.Add(('"{0}" is not a valid Semantic Version.' -f $version))
-
-                    [bool] $buildFound = $false
-                    [bool] $prereleaseFound = $false
-
-                    [string] $remainingString = $version
-
-                    # Check for build label, and remove it from the remainingString.
-                    if ($remainingString -match '\+') {
-                        $buildFound = $true
-                        [string[]] $buildSplit = @($remainingString -split '\+', 2)
-
-                        $remainingString = $buildSplit[0]
-                        [string] $buildLabel = $buildSplit[1]
-                    }
-
-                    # Check for prerelease label, and remove it from the remainingString.
-                    if ($remainingString -match '\-') {
-                        $prereleaseFound = $true
-                        [string[]] $prereleaseSplit = @($remainingString -split '\-', 2)
-
-                        $remainingString = $prereleaseSplit[0]
-                        [string] $prereleaseLabel = $prereleaseSplit[1]
-                    }
-
-                    # Check for separate major/minor/patch components.
-                    if ($remainingString -match '^(?<major>.*)\.(?<minor>.*)\.(?<patch>.*)$') {
-                        [string] $major = $Matches['major']
-                        [string] $minor = $Matches['minor']
-                        [string] $patch = $Matches['patch']
-
-                        if ($major -as [int] -as [string] -ne $major) {
-                            $verboseMessage.Add('Major version must be a non-negative integer and must not contain leading zeros.')
-                        }
-
-                        if ($minor -as [int] -as [string] -ne $minor) {
-                            $verboseMessage.Add('Minor version must be a non-negative integer and must not contain leading zeros.')
-                        }
-
-                        if ($patch -as [int] -as [string] -ne $patch) {
-                            $verboseMessage.Add('Patch version must be a non-negative integer and must not contain leading zeros.')
-                        }
-                    }
-                    else {
-                        $verboseMessage.Add('A normal version number MUST take the form X.Y.Z where X, Y, and Z are non-negative integers, and MUST NOT contain leading zeros.')
-                    }
-                    #[string[]] $normalVersionSplit = $remainingString -split '\.'
-                    #if ($normalVersionSplit.Length -ne 3) {
-                    #    $verboseMessage.Add('Normal version must have exactly three dot separated identifiers.')
-                    #}
-                    #else {
-                    #    [string] $major = $normalVersionSplit[0]
-                    #    [string] $minor = $normalVersionSplit[1]
-                    #    [string] $patch = $normalVersionSplit[2]
-                    #
-                    #}
-
-                    # If present, validate prerelease label.
-                    if ($prereleaseFound) {
-                        if ($prereleaseLabel -notmatch $preReleasePattern) {
-                            $verboseMessage.Add('Pre-release identifiers MUST comprise only ASCII alphanumerics and hyphen [0-9A-Za-z-]. Identifiers MUST NOT be empty. Numeric identifiers MUST NOT include leading zeroes.')
-                        }
-                    }
-
-                    # If present, validate build label.
-                    if ($buildFound) {
-                        if ($buildLabel -notmatch $buildPattern) {
-                            $verboseMessage.Add('Build identifiers MUST comprise only ASCII alphanumerics and hyphen [0-9A-Za-z-]. Identifiers MUST NOT be empty.')
-                        }
-                    }
-
-                    Write-Verbose -Message ($verboseMessage -join "`n`t- ")
+                if (-not $AsErrorRecord) {
+                    $isValid
                 }
             }
+            else {
+                [string] $normalVersion = ''
+                [string] $prereleaseLabel = ''
+                [string] $buildLabel = ''
+
+                # Try to split the string into the standard semver parts in order to find out why it is invalid.
+                # normalVersion-preRelease+build
+                if ($version.Contains('-') -and $version.Contains('+')) {
+                    $normalVersion = @($version -split '\-', 2)[0]
+                    $prereleaseLabel = @(@($version -split '\-', 2)[-1] -split '\+', 2)[0]
+                    $buildLabel = @(@($version -split '\-', 2)[-1] -split '\+', 2)[-1]
+                }
+                # normalVersion-preRelease
+                elseif ($version.Contains('-') -and -not $version.Contains('+')) {
+                    $normalVersion = @($version -split '\-', 2)[0]
+                    $prereleaseLabel = @($version -split '\-', 2)[-1]
+                    $buildLabel = ''
+                }
+                # normalVersion+build
+                elseif (-not $version.Contains('-') -and $version.Contains('+')) {
+                    $normalVersion = @($version -split '\+', 2)[0]
+                    $prereleaseLabel = ''
+                    $buildLabel = @($version -split '\+', 2)[-1]
+                }
+                # normalVersion
+                else {
+                    $normalVersion = $version
+                    $prereleaseLabel = ''
+                    $buildLabel = ''
+                }
+
+                Write-Debug "`$normalVersion: $normalVersion"
+                Write-Debug "`$prereleaseLabel: $prereleaseLabel"
+                Write-Debug "`$buildLabel: $buildLabel"
+
+                # Validate normal version.
+                if ($normalVersion -notmatch $normalVersionPattern) {
+                    $messageId = 'CannotParseNormalVersion'
+                    $message = $messages[$messageId]
+                    $recommendedAction = $messages[$messageId + 'RecommendedAction']
+
+                    [string[]] $normalVersionElements = $normalVersion -split '\-'
+                    if ($normalVersionElements.Length -ne 3) {
+                        $message = 'A normal version number MUST take the form X.Y.Z where X, Y, and Z are non-negative integers, and MUST NOT contain leading zeroes. X is the major version, Y is the minor version, and Z is the patch version.'
+                    }
+                    else {
+                        for ($i = 0; $i -lt $normalVersionElements.Length; $i++) {
+                            switch ($i) {
+                                0 {$elementName = 'Major'}
+                                1 {$elementName = 'Minor'}
+                                2 {$elementName = 'Patch'}
+                            }
+
+                            if ($normalVersionElements[$i].Trim() -eq '') {
+                                $message = '{0} version must not be empty' -f $elementName
+                                break
+                            }
+
+                            if ($normalVersionElements[$i] -notmatch '^\d+$') {
+                                #$message = '{0} version must be a non-negative integer value.' -f $elementName
+                                $messageId = 'ElementCannotBeNegativeOrHaveLeadingZero'
+                                $message = $messages[$messageId] -f $elementName
+                                $recommendedAction = $messages[$messageId + 'RecommendedAction']
+                                break
+                            }
+
+                            if ($normalVersionElements[$i] -as [int] -as [string] -ne $normalVersionElements[$i]) {
+                                #$message = '{0} version must not contain leading zeros.' -f $elementName
+                                $messageId = 'ElementCannotBeNegativeOrHaveLeadingZero'
+                                $message = $messages[$messageId] -f $elementName
+                                $recommendedAction = $messages[$messageId + 'RecommendedAction']
+                                break
+                            }
+                        }
+                    }
+                }
+                # Validate pre-release.
+                elseif ($prereleaseLabel.Length -ne 0 -and $prereleaseLabel -notmatch $preReleasePattern) {
+                    $messageId = 'LabelInvalid'
+                    $message = $messages[$messageId] -f 'PreRelease'
+                    $recommendedAction = $messages[$messageId + 'RecommendedAction']
+
+                    [string[]] $prereleaseIndicators = @($prereleaseLabel -split '\.')
+                    for ($i = 0; $i -lt $prereleaseIndicators.Length; $i++) {
+                        if ($prereleaseIndicators[$i].Trim() -eq '') {
+                            $message = '{0} indicator at index {1} cannot be empty.' -f 'Pre-release', $i
+                        }
+                        elseif ($prereleaseIndicators[$i] -notmatch '^([0-9A-Z-][A-Z-]*|[1-9A-Z-][0-9A-Z-]+)$') {
+                            $message = '{0} indicator at index {1} must contain only alphanumeric characters or hyphen. Numeric indicators must not contain leading zero.' -f 'Pre-release', $i
+                        }
+                    }
+                }
+                # Validate build.
+                elseif ($buildLabel.Length -ne 0 -and $buildLabel -notmatch $buildPattern) {
+                    $messageId = 'LabelInvalid'
+                    $message = $messages[$messageId] -f 'Build'
+                    $recommendedAction = $messages[$messageId + 'RecommendedAction']
+
+                    [string[]] $buildIndicators = @($buildLabel -split '\.')
+                    for ($i = 0; $i -lt $buildIndicators.Length; $i++) {
+                        if ($buildIndicators[$i].Trim() -eq '') {
+                            $message = '{0} indicator at index {1} cannot be empty.' -f 'Build', $i
+                        }
+                        elseif ($buildIndicators[$i] -notmatch '^[0-9A-Z-]+$') {
+                            $message = '{0} indicator at index {1} must contain only alphanumeric characters or hyphen.' -f 'Build', $i
+                        }
+                    }
+                }
+
+                if ($AsErrorRecord) {
+                    [System.FormatException] $ex = New-Object -TypeName System.FormatException -ArgumentList @($message)
+
+                    [hashtable] $erHash = @{
+                        Exception = $ex
+                        Message = $message
+                        Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                        ErrorId = $messageId
+                        TargetObject = $item
+                        RecommendedAction = $recommendedAction
+                        CategoryActivity = 'Test-SemanticVersion'
+                        CategoryReason = 'Invalid Input'
+                        CategoryTargetName = 'InputObject'
+                        CategoryTargetType = $item.GetType()
+                    }
+
+                    [System.Management.Automation.ErrorRecord] $errorRecord = Write-Error @erHash 2>&1
+
+                    $errorRecord
+                }
+                else {
+                    $isValid
+                }
+            }
+            Write-Verbose $message
         }
     }
 }
@@ -1269,12 +1365,12 @@ function Step-SemanticVersion {
             $newSemVer.Increment($Increment, $Label)
         }
         catch [System.ArgumentOutOfRangeException],[System.ArgumentException] {
-            Write-Error -Exception $_.Exception -Category InvalidArgument -TargetObject $InputObject
-            return
+            $er = Write-Error -Exception $_.Exception -Category InvalidArgument -TargetObject $InputObject 2>&1
+            $PSCmdlet.ThrowTerminatingError($er)
         }
         catch {
-            Write-Error -Exception $_.Exception -Message ('Error using label "{0}" when incrementing version "{1}".' -f $Label, $InputObject.ToString()) -TargetObject $InputObject
-            return
+            $er = Write-Error -Exception $_.Exception -Message ('Error using label "{0}" when incrementing version "{1}".' -f $Label, $InputObject.ToString()) -TargetObject $InputObject 2>&1
+            $PSCmdlet.ThrowTerminatingError($er)
         }
     }
     else {
@@ -1311,6 +1407,14 @@ New-Variable -Name NamedSemVerRegEx -Value (
 
 [hashtable] $messages = data {
     ConvertFrom-StringData @'
+    ValidSemanticVersion=
+    InvalidSemanticVersion=
+    ElementCannotBeNegativeOrHaveLeadingZero={0} version must be a non-negative integer and must not contain leading zeros.
+    ElementCannotBeNegativeOrHaveLeadingZeroRecommendedAction=Verify the element is a non-negative integer and does not have leading zeros.
+    CannotParseNormalVersion=A normal version number MUST take the form X.Y.Z where X, Y, and Z are non-negative integers, and MUST NOT contain leading zeroes. X is the major version, Y is the minor version, and Z is the patch version.
+    CannotParseNormalVersionRecommendedAction=Verify the input string begins with three non-negative integers without leading zeros.
+    LabelInvalid={0} label is not valid.
+    LabelInvalidRecommendedAction=Verify the label is in the correct format.
     FileNotFoundError=The specified file was not found.
     MetadataIdentifierCanOnlyContainAlphanumericsAndHyphen={0} identifiers MUST comprise only ASCII alphanumerics and hyphen [0-9A-Za-z-].
     MetadataIdentifierCannotContainSpaces={0} identifier cannot contain spaces.
@@ -1334,6 +1438,6 @@ foreach ($key in $localizedMessages.Keys) {
     $messages[$key] = $localizedMessages[$key]
 }
 
-Export-ModuleMember -Function $exportedFunctions
+#Export-ModuleMember -Function $exportedFunctions
 
 Remove-Variable exportedFunctions, localizedMessages, key

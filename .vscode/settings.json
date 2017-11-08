@@ -1,9 +1,22 @@
 {
-    // Limit lines to 115 characters when possible.
-    //   - https://github.com/PoshCode/PowerShellPracticeAndStyle
+    "editor.detectIndentation": false,
+    "editor.insertSpaces": true,
+    // https://github.com/PoshCode/PowerShellPracticeAndStyle/blob/master/Style-Guide/Code-Layout-and-Formatting.md#maximum-line-length
     "editor.rulers": [115],
+    // https://github.com/PoshCode/PowerShellPracticeAndStyle/blob/master/Style-Guide/Code-Layout-and-Formatting.md#maximum-line-length
+    "editor.tabSize": 4,
+    "files.defaultLanguage": "powershell",
+    // https://github.com/PoshCode/PowerShellPracticeAndStyle/blob/master/Style-Guide/Code-Layout-and-Formatting.md#trailing-spaces
+    "files.trimTrailingWhitespace": true,
+    "powershell.codeFormatting.alignPropertyValuePairs": true,
+    "powershell.codeFormatting.ignoreOneLineBlock": false, // changed from default value.
+    "powershell.codeFormatting.newLineAfterCloseBrace": true,
+    "powershell.codeFormatting.newLineAfterOpenBrace": true,
+    "powershell.codeFormatting.openBraceOnSameLine": true,
+    "powershell.codeFormatting.whitespaceAfterSeparator": true,
+    "powershell.codeFormatting.whitespaceBeforeOpenBrace": true,
+    "powershell.codeFormatting.whitespaceBeforeOpenParen": true
     // Use a custom PowerShell Script Analyzer settings file for this workspace.
     // Relative paths for this setting are always relative to the workspace root dir.
-    "powershell.scriptAnalysis.settingsPath": "./tools/PSScriptAnalyzerSettings.psd1",
-    "files.defaultLanguage": "powershell"
+    //"powershell.scriptAnalysis.settingsPath": "./tools/PSScriptAnalyzerSettings.psd1"
 }
