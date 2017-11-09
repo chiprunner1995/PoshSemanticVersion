@@ -129,6 +129,17 @@ InModuleScope $moduleName {
             Test-SemanticVersion -Version '1.2.3+a..0' | Should Be $false
         }
 
+        Context 'Using -AsErrorRecord' {
+            It 'Returns nothing if input is valid' {
+                Test-SemanticVersion -Version '1.2.3-alpha.5-build.6' -AsErrorRecord | Should Be $null
+            }
+
+            It 'Outputs an ErrorRecord if input is invalid' {
+                Test-SemanticVersion -Version '1.2.3.4' -AsErrorRecord |
+                    ForEach-Object {$_.GetType() -as [string]} |
+                    Should Be 'System.Management.Automation.ErrorRecord'
+            }
+        }
     }
 
     Describe 'Compare-SemanticVersion' {
