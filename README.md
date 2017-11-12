@@ -14,9 +14,13 @@ creating, validating, comparing, and incrementing Semantic Versions.
 Installation
 ------------
 
-Copy the "PoshSemanticVersion" subdirectory from this repository into a directory in your PSModulePath path.
+Install with PowerShellGet:
 
-PowerShellGet package coming soon.
+```powershell
+Install-Module -Name PoshSemanticVersion
+```
+
+Or copy the "PoshSemanticVersion" subdirectory from this repository into a directory in your PSModulePath path.
 
 Usage
 -----
