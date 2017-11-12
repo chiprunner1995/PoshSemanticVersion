@@ -155,4 +155,23 @@
       </ScriptProperty>
     </Members>
   </Type>
+  <Type>
+    <Name>PoshSemanticVersionComparison</Name>
+    <Members>
+      <MemberSet>
+        <Name>PSStandardMembers</Name>
+        <Members>
+          <PropertySet>
+            <Name>DefaultDisplayPropertySet</Name>
+            <ReferencedProperties>
+              <Name>ReferenceVersion</Name>
+              <Name>Precedence</Name>
+              <Name>DifferenceVersion</Name>
+              <Name>IsCompatible</Name>
+            </ReferencedProperties>
+          </PropertySet>
+        </Members>
+      </MemberSet>
+    </Members>
+  </Type>
 </Types>

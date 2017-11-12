@@ -1,3 +1,24 @@
+<#
+    Values used when determining valid incremented results:
+
+        SemVer  PreRelease PrePatch PreMinor PreMajor Patch  Minor  Major
+        ------  ---------- -------- -------- -------- ------ ------ -----
+        0.0.0-0 0.0.0-1    0.0.1-0  0.1.0-0  1.0.0-0  0.0.0  0.0.0  0.0.0
+        0.0.0   0.0.1-0    0.0.1-0  0.1.0-0  1.0.0-0  0.0.1  0.1.0  1.0.0
+        1.0.0-0 1.0.0-1    1.0.1-0  1.1.0-0  2.0.0-0  1.0.0  1.0.0  1.0.0
+        1.0.0   1.0.1-0    1.0.1-0  1.1.0-0  2.0.0-0  1.0.1  1.1.0  2.0.0
+        1.0.1-0 1.0.1-1    1.0.2-0  1.1.0-0  2.0.0-0  1.0.1  1.1.0  2.0.0
+        1.0.1   1.0.2-0    1.0.2-0  1.1.0-0  2.0.0-0  1.0.2  1.1.0  2.0.0
+        1.1.0-0 1.1.0-1    1.1.1-0  1.2.0-0  2.0.0-0  1.1.0  1.1.0  2.0.0
+        1.1.0   1.1.1-0    1.1.1-0  1.2.0-0  2.0.0-0  1.1.1  1.2.0  2.0.0
+        1.1.1-0 1.1.1-1    1.1.2-0  1.2.0-0  2.0.0-0  1.1.1  1.2.0  2.0.0
+        1.1.1   1.1.2-0    1.1.2-0  1.2.0-0  2.0.0-0  1.1.2  1.2.0  2.0.0
+        2.0.0-0 2.0.0-1    2.0.1-0  2.1.0-0  3.0.0-0  2.0.0  2.0.0  2.0.0
+        2.0.0   2.0.1-0    2.0.1-0  2.1.0-0  3.0.0-0  2.0.1  2.1.0  3.0.0
+#>
+
+
+
 param (
     [string]
     $ModuleName = 'PoshSemanticVersion'
@@ -128,18 +149,6 @@ InModuleScope $moduleName {
             Test-SemanticVersion -Version '1.2.3-0+0+' | Should Be $false
             Test-SemanticVersion -Version '1.2.3+a..0' | Should Be $false
         }
-
-        Context 'Using -AsErrorRecord' {
-            It 'Returns nothing if input is valid' {
-                Test-SemanticVersion -Version '1.2.3-alpha.5-build.6' -AsErrorRecord | Should Be $null
-            }
-
-            It 'Outputs an ErrorRecord if input is invalid' {
-                Test-SemanticVersion -Version '1.2.3.4' -AsErrorRecord |
-                    ForEach-Object {$_.GetType() -as [string]} |
-                    Should Be 'System.Management.Automation.ErrorRecord'
-            }
-        }
     }
 
     Describe 'Compare-SemanticVersion' {
@@ -149,8 +158,8 @@ InModuleScope $moduleName {
             $compareOutput.Precedence | Should Be '='
         }
 
-        It 'Accepts the ReferenceVersion parameter from the pipeline' {
-            {'1.2.3' | Compare-SemanticVersion -DifferenceVersion '1.2.4'} | Should Not Throw
+        It 'Accepts the DifferenceVersion parameter from the pipeline' {
+            {'1.2.3' | Compare-SemanticVersion -ReferenceVersion '1.2.4'} | Should Not Throw
         }
 
         It 'Accepts a string or calls an object''s ToString() method' {
@@ -163,16 +172,16 @@ InModuleScope $moduleName {
 
         }
 
-        It 'Returns an object with ReferenceVersion, DifferenceVersion, Precedence, and AreCompatible properties' {
+        It 'Returns an object with ReferenceVersion, Precedence, DifferenceVersion, and IsCompatible properties' {
             $propertyNames = @(Compare-SemanticVersion -ReferenceVersion '1.2.3' -DifferenceVersion '1.2.4' |
                                Get-Member |
                                Where-Object {$_.MemberType -like '*Property'} |
                                Select-Object -ExpandProperty Name)
 
             $propertyNames -contains 'ReferenceVersion' | Should Be $true
-            $propertyNames -contains 'DifferenceVersion' | Should Be $true
             $propertyNames -contains 'Precedence' | Should Be $true
-            $propertyNames -contains 'AreCompatible' | Should Be $true
+            $propertyNames -contains 'DifferenceVersion' | Should Be $true
+            $propertyNames -contains 'IsCompatible' | Should Be $true
         }
 
         It 'Calls the ReferenceVersion object''s CompareTo() method to set the Precedence property.' {
@@ -184,13 +193,13 @@ InModuleScope $moduleName {
             $compareOutput.Precedence | Should Be '<'
         }
 
-        It 'Calls the ReferenceVersion object''s CompatibleWith() method to set the AreCompatible property.' {
+        It 'Calls the ReferenceVersion object''s CompatibleWith() method to set the IsCompatible property.' {
             $semver1 = New-SemanticVersion '1.2.3'
             $semver2 = New-SemanticVersion '1.2.4'
 
             $compareOutput = Compare-SemanticVersion -ReferenceVersion $semver1 -DifferenceVersion $semver2
 
-            $compareOutput.AreCompatible | Should Be $true
+            $compareOutput.IsCompatible | Should Be $true
         }
 
         Context 'When the ReferenceVersion has equal precedence to the DifferenceVersion' {
@@ -332,24 +341,24 @@ InModuleScope $moduleName {
         }
 
         Context 'When the ReferenceVersion and DifferenceVersion are compatible' {
-            It 'Sets the AreCompatible property to true.' {
+            It 'Sets the IsCompatible property to true.' {
                 $semver1 = New-SemanticVersion '1.2.3'
                 $semver2 = New-SemanticVersion '1.2.4'
 
                 $compareOutput = Compare-SemanticVersion -ReferenceVersion $semver1 -DifferenceVersion $semver2
 
-                $compareOutput.AreCompatible | Should Be $true
+                $compareOutput.IsCompatible | Should Be $true
             }
         }
 
         Context 'When the ReferenceVersion and DifferenceVersion are not compatible' {
-            It 'Sets the AreCompatible property to false.' {
+            It 'Sets the IsCompatible property to false.' {
                 $semver1 = New-SemanticVersion '1.2.3'
                 $semver2 = New-SemanticVersion '2.2.3'
 
                 $compareOutput = Compare-SemanticVersion -ReferenceVersion $semver1 -DifferenceVersion $semver2
 
-                $compareOutput.AreCompatible | Should Be $false
+                $compareOutput.IsCompatible | Should Be $false
             }
         }
     }

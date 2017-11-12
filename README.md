@@ -5,6 +5,19 @@ Functions for working with Semantic Version numbers in PowerShell.
 
 Read more about Semantic Versioning at http://semver.org
 
+Features
+--------
+
+This module aims to provide basic Semantic Version tools for the PowerShell community. There are functions for
+creating, validating, comparing, and incrementing Semantic Versions.
+
+Installation
+------------
+
+Copy the "PoshSemanticVersion" subdirectory from this repository into a directory in your PSModulePath path.
+
+PowerShellGet package coming soon.
+
 Usage
 -----
 
