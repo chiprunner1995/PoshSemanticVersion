@@ -153,6 +153,14 @@
             }
         </SetScriptBlock>
       </ScriptProperty>
+      <AliasProperty>
+        <Name>PreReleaseLabel</Name>
+        <ReferencedMemberName>PreRelease</ReferencedMemberName>
+      </AliasProperty>
+      <AliasProperty>
+        <Name>BuildLabel</Name>
+        <ReferencedMemberName>Build</ReferencedMemberName>
+      </AliasProperty>
     </Members>
   </Type>
   <Type>

@@ -279,10 +279,14 @@ function Split-SemanticVersion {
 
 #region Exported functions
 
+
 [System.Collections.Generic.List[string]] $exportedFunctions = [Activator]::CreateInstance([System.Collections.Generic.List[string]])
+[System.Collections.Generic.List[string]] $exportedAliases = [Activator]::CreateInstance([System.Collections.Generic.List[string]])
 
 
 $exportedFunctions.Add('New-SemanticVersion')
+$exportedAliases.Add('nsemver')
+New-Alias -Name nsemver -Value New-SemanticVersion
 function New-SemanticVersion {
     <#
      .SYNOPSIS
@@ -1087,6 +1091,8 @@ function New-SemanticVersion {
 
 
 $exportedFunctions.Add('Test-SemanticVersion')
+$exportedAliases.Add('tsemver')
+New-Alias -Name tsemver -Value Test-SemanticVersion
 function Test-SemanticVersion {
     <#
      .SYNOPSIS
@@ -1144,6 +1150,8 @@ function Test-SemanticVersion {
 
 
 $exportedFunctions.Add('Compare-SemanticVersion')
+$exportedAliases.Add('crsemver')
+New-Alias -Name crsemver -Value Compare-SemanticVersion
 function Compare-SemanticVersion {
     <#
      .SYNOPSIS
@@ -1310,6 +1318,8 @@ function Compare-SemanticVersion {
 
 
 $exportedFunctions.Add('Step-SemanticVersion')
+$exportedAliases.Add('stsemver')
+New-Alias -Name stsemver -Value Step-SemanticVersion
 function Step-SemanticVersion {
     <#
      .SYNOPSIS
@@ -1547,6 +1557,6 @@ foreach ($key in $localizedMessages.Keys) {
 [System.Globalization.CultureInfo] $Script:cultureInfo = Get-Culture
 [System.Globalization.TextInfo] $Script:textInfo = $cultureInfo.TextInfo
 
-Export-ModuleMember -Function $exportedFunctions
+Export-ModuleMember -Function $exportedFunctions -Cmdlet @() -Variable @() -Alias $exportedAliases
 
-Remove-Variable exportedFunctions, localizedMessages, key
+Remove-Variable exportedFunctions, exportedAliases, localizedMessages, key

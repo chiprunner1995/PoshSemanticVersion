@@ -5,6 +5,11 @@ This project adheres to [Semantic Versioning](http://semver.org/) for
 official project tracking. For technical reasons, the module version
 number cannot be expressed using Semantic Versioning.
 
+## 1.4.0 - 2017-12-03
+### Features
+- Added aliases for exported commands
+- Added alias properties "PreReleaseLabel" and "BuildLabel" to match PowerShell v6.x native SemanticVersion type.
+
 ## 1.3.0 - 2017-11-12
 ### Features
 - Compare-SemanticVersion now takes pipeline input.
