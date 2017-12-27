@@ -271,6 +271,13 @@ InModuleScope $moduleName {
 
                 $compareOutput.Precedence | Should Be '>'
 
+                $semver1 = New-SemanticVersion '1.2.3-11'
+                $semver2 = New-SemanticVersion '1.2.3-2'
+
+                $compareOutput = Compare-SemanticVersion -ReferenceVersion $semver1 -DifferenceVersion $semver2
+
+                $compareOutput.Precedence | Should Be '>'
+
                 $semver1 = New-SemanticVersion '1.2.3-a'
                 $semver2 = New-SemanticVersion '1.2.3-0'
 
@@ -319,6 +326,13 @@ InModuleScope $moduleName {
 
                 $semver1 = New-SemanticVersion '1.2.3-0'
                 $semver2 = New-SemanticVersion '1.2.3-1'
+
+                $compareOutput = Compare-SemanticVersion -ReferenceVersion $semver1 -DifferenceVersion $semver2
+
+                $compareOutput.Precedence | Should Be '<'
+
+                $semver1 = New-SemanticVersion '1.2.3-2'
+                $semver2 = New-SemanticVersion '1.2.3-11'
 
                 $compareOutput = Compare-SemanticVersion -ReferenceVersion $semver1 -DifferenceVersion $semver2
 
@@ -609,6 +623,11 @@ InModuleScope $moduleName {
 
                 $semver1.CompareTo($semver2) | Should BeGreaterThan 0
 
+                $semver1 = New-SemanticVersion -String '1.0.0-11'
+                $semver2 = New-SemanticVersion -String '1.0.0-2'
+
+                $semver1.CompareTo($semver2) | Should BeGreaterThan 0
+
                 $semver1 = New-SemanticVersion -String '1.0.0-a'
                 $semver2 = New-SemanticVersion -String '1.0.0-0'
 
@@ -655,6 +674,11 @@ InModuleScope $moduleName {
 
                 $semver1 = New-SemanticVersion -String '1.0.0-0'
                 $semver2 = New-SemanticVersion -String '1.0.0-1'
+
+                $semver1.CompareTo($semver2) | Should BeLessThan 0
+
+                $semver1 = New-SemanticVersion -String '1.0.0-2'
+                $semver2 = New-SemanticVersion -String '1.0.0-11'
 
                 $semver1.CompareTo($semver2) | Should BeLessThan 0
 

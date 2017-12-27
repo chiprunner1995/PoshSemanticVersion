@@ -531,7 +531,15 @@ function New-SemanticVersion {
                     }
 
                     for ([int] $i = 0; $i -lt $shortestArray; $i++) {
-                        if ($PreRelease[$i] -notmatch '^[0-9]+$' -and ($VersionPreRelease[$i] -match '^[0-9]+$')) {
+                        if ($PreRelease[$i] -match '^[0-9]+$' -and ($VersionPreRelease[$i] -match '^[0-9]+$')) {
+                            if (([int] $PreRelease[$i]) -gt ([int] $VersionPreRelease[$i])) {
+                                $returnValue = 1
+                            }
+                            elseif (([int] $PreRelease[$i]) -lt ([int] $VersionPreRelease[$i])) {
+                                $returnValue = -1
+                            }
+                        }
+                        elseif ($PreRelease[$i] -notmatch '^[0-9]+$' -and ($VersionPreRelease[$i] -match '^[0-9]+$')) {
                             $returnValue = 1
                         }
                         elseif ($PreRelease[$i] -match '^[0-9]+$' -and ($VersionPreRelease[$i] -notmatch '^[0-9]+$')) {
@@ -650,7 +658,15 @@ function New-SemanticVersion {
                     }
 
                     for ([int] $i = 0; $i -lt $shortestArray; $i++) {
-                        if ($PreRelease[$i] -notmatch '^[0-9]+$' -and ($VersionPreRelease[$i] -match '^[0-9]+$')) {
+                        if ($PreRelease[$i] -match '^[0-9]+$' -and ($VersionPreRelease[$i] -match '^[0-9]+$')) {
+                            if (([int] $PreRelease[$i]) -gt ([int] $VersionPreRelease[$i])) {
+                                $returnValue = 1
+                            }
+                            elseif (([int] $PreRelease[$i]) -lt ([int] $VersionPreRelease[$i])) {
+                                $returnValue = -1
+                            }
+                        }
+                        elseif ($PreRelease[$i] -notmatch '^[0-9]+$' -and ($VersionPreRelease[$i] -match '^[0-9]+$')) {
                             $returnValue = 1
                         }
                         elseif ($PreRelease[$i] -match '^[0-9]+$' -and ($VersionPreRelease[$i] -notmatch '^[0-9]+$')) {
