@@ -607,7 +607,7 @@ function New-SemanticVersion {
                     }
 
                     if ($Matches.ContainsKey('build')) {
-                        $difHash['Bulid'] = [string[]] @($Matches['build'] -split '\.')
+                        $difHash['Build'] = [string[]] @($Matches['build'] -split '\.')
                     }
                 }
                 else {
