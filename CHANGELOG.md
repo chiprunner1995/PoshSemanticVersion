@@ -5,6 +5,20 @@ This project adheres to [Semantic Versioning](http://semver.org/) for
 official project tracking. For technical reasons, the module version
 number cannot be expressed using Semantic Versioning.
 
+## 1.5.0 - 2018-03-26
+
+### Features
+
+- New-SemanticVersion: Incomplete version string is converted to SemanticVersion object.
+
+### Fixes
+
+- Compare-SemanticVersion: Fixed spelling in comparison logic.
+
+### Changes
+
+- Dropped support for PowerShell v2.
+
 ## 1.4.1 - 2017-12-26
 
 ### Fixes
