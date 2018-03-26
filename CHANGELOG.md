@@ -5,6 +5,12 @@ This project adheres to [Semantic Versioning](http://semver.org/) for
 official project tracking. For technical reasons, the module version
 number cannot be expressed using Semantic Versioning.
 
+## 1.5.1 - 2018-03-26
+
+### Fixes
+
+- Restored missing files from 1.5.0 release.
+
 ## 1.5.0 - 2018-03-26
 
 ### Features
