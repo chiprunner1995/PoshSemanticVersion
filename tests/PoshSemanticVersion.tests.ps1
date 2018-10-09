@@ -394,6 +394,22 @@ InModuleScope $moduleName {
             (Step-SemanticVersion 0.0.0-a+0 PreRelease).ToString() | Should Be '0.0.0-a.0+0'
         }
 
+        It 'Accepts pipeline input' {
+            $inputValues = @('1.2.3', '1.2.3-1', '1.2.3+b5432')
+
+            $results = @($inputValues | Step-SemanticVersion)
+            $results.Count | Should Be 3
+            $results[0].ToString() | Should Be '1.2.4-0'
+            $results[1].ToString() | Should Be '1.2.3-2'
+            $results[2].ToString() | Should Be '1.2.4-0+b5432'
+
+            $results2 = @($inputValues | Step-SemanticVersion -Type Minor)
+            $results2.Count | Should Be 3
+            $results2[0].ToString() | Should Be '1.3.0'
+            $results2[1].ToString() | Should Be '1.3.0'
+            $results2[2].ToString() | Should Be '1.3.0+b5432'
+        }
+
         Context 'Input: 0.0.0-0' {
             BeforeEach {
                 $inputString = '0.0.0-0'

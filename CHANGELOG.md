@@ -5,6 +5,12 @@ This project adheres to [Semantic Versioning](http://semver.org/) for
 official project tracking. For technical reasons, the module version
 number cannot be expressed using Semantic Versioning.
 
+## Unreleased
+
+### Fixes
+
+- Step-SemanticVersion now accepts pipeline input.
+
 ## 1.5.1 - 2018-03-26
 
 ### Fixes

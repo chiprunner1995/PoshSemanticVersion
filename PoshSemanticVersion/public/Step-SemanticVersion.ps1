@@ -78,7 +78,8 @@ function Step-SemanticVersion {
             }
             else {
                 $erHash = Debug-SemanticVersion -InputObject $_ -ParameterName InputObject
-                $er = Write-Error @erHash 2>&1
+                #$er = Write-Error @erHash 2>&1
+                $er = New-Object -TypeName System.Management.Automation.ErrorRecord -ArgumentList $erHash['Exception'], $erHash['ErrorId'], $erHash['Category'], $_
                 throw ($er)
             }
         })]
@@ -103,26 +104,32 @@ function Step-SemanticVersion {
         $Label
     )
 
-    $newSemVer = New-SemanticVersion -InputObject $InputObject
+    process {
+        foreach ($obj in $InputObject) {
+            $newSemVer = New-SemanticVersion -InputObject $obj
 
-    if ($PSBoundParameters.ContainsKey('Label')) {
-        try {
-            $newSemVer.Increment($Type, $Label)
-        }
-        catch [System.ArgumentOutOfRangeException],[System.ArgumentException] {
-            $er = Write-Error -Exception $_.Exception -Category InvalidArgument -TargetObject $InputObject 2>&1
-            $PSCmdlet.ThrowTerminatingError($er)
-        }
-        catch {
-            $er = Write-Error -Exception $_.Exception -Message ('Error using label "{0}" when incrementing version "{1}".' -f $Label, $InputObject.ToString()) -TargetObject $InputObject 2>&1
-            $PSCmdlet.ThrowTerminatingError($er)
+            if ($PSBoundParameters.ContainsKey('Label')) {
+                try {
+                    $newSemVer.Increment($Type, $Label)
+                }
+                catch [System.ArgumentOutOfRangeException],[System.ArgumentException] {
+                    $ex = $_.Exception
+                    $er = New-Object -TypeName System.Management.Automation.ErrorRecord -ArgumentList $ex, 'InvalidSemVer', ([System.Management.Automation.ErrorCategory]::InvalidArgument), $obj
+                    $PSCmdlet.ThrowTerminatingError($er)
+                }
+                catch {
+                    $ex = $_.Exception
+                    $er = New-Object -TypeName System.Management.Automation.ErrorRecord -ArgumentList $ex, 'UnableToIncrement', ([System.Management.Automation.ErrorCategory]::InvalidOperation), $obj
+                    $PSCmdlet.ThrowTerminatingError($er)
+                }
+            }
+            else {
+                $newSemVer.Increment($Type)
+            }
+
+            $newSemVer
         }
     }
-    else {
-        $newSemVer.Increment($Type)
-    }
-
-    $newSemVer
 }
 
 
