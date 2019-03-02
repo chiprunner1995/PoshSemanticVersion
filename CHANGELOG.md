@@ -5,7 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/) for
 official project tracking. For technical reasons, the module version
 number cannot be expressed using Semantic Versioning.
 
-## Unreleased
+## 1.5.2 - 2019-03-01
 
 ### Fixes
 
