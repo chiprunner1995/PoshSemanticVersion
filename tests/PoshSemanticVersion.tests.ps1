@@ -1,22 +1,3 @@
-<#
-    Values used when determining valid incremented results:
-
-        SemVer  PreRelease PrePatch PreMinor PreMajor Patch  Minor  Major
-        ------  ---------- -------- -------- -------- ------ ------ -----
-        0.0.0-0 0.0.0-1    0.0.1-0  0.1.0-0  1.0.0-0  0.0.0  0.0.0  0.0.0
-        0.0.0   0.0.1-0    0.0.1-0  0.1.0-0  1.0.0-0  0.0.1  0.1.0  1.0.0
-        1.0.0-0 1.0.0-1    1.0.1-0  1.1.0-0  2.0.0-0  1.0.0  1.0.0  1.0.0
-        1.0.0   1.0.1-0    1.0.1-0  1.1.0-0  2.0.0-0  1.0.1  1.1.0  2.0.0
-        1.0.1-0 1.0.1-1    1.0.2-0  1.1.0-0  2.0.0-0  1.0.1  1.1.0  2.0.0
-        1.0.1   1.0.2-0    1.0.2-0  1.1.0-0  2.0.0-0  1.0.2  1.1.0  2.0.0
-        1.1.0-0 1.1.0-1    1.1.1-0  1.2.0-0  2.0.0-0  1.1.0  1.1.0  2.0.0
-        1.1.0   1.1.1-0    1.1.1-0  1.2.0-0  2.0.0-0  1.1.1  1.2.0  2.0.0
-        1.1.1-0 1.1.1-1    1.1.2-0  1.2.0-0  2.0.0-0  1.1.1  1.2.0  2.0.0
-        1.1.1   1.1.2-0    1.1.2-0  1.2.0-0  2.0.0-0  1.1.2  1.2.0  2.0.0
-        2.0.0-0 2.0.0-1    2.0.1-0  2.1.0-0  3.0.0-0  2.0.0  2.0.0  2.0.0
-        2.0.0   2.0.1-0    2.0.1-0  2.1.0-0  3.0.0-0  2.0.1  2.1.0  3.0.0
-#>
-
 #Requires -Module @{ModuleName = 'Pester'; ModuleVersion = '5.3.0'; Guid = 'a699dea5-2c73-4616-a270-1f7abb777e71'}
 
 BeforeAll {
@@ -27,8 +8,6 @@ BeforeAll {
     Import-Module -Name $sut -Force
     Remove-Variable -Name moduleName, here, sut
 }
-
-
 
 Describe 'New-SemanticVersion' {
     It 'Creates an object using component parameters' {
@@ -114,43 +93,43 @@ Describe 'Test-SemanticVersion' {
         Test-SemanticVersion '1.2.3' | Should -Be $true
     }
 
-    It 'Succeeds if a valid semantic version string is specified.' {
-        Test-SemanticVersion -Version '0.0.0' | Should -Be $true
-        Test-SemanticVersion -Version '1.2.3' | Should -Be $true
-        Test-SemanticVersion -Version '1.2.3-0' | Should -Be $true
-        Test-SemanticVersion -Version '1.2.3-0.0' | Should -Be $true
-        Test-SemanticVersion -Version '1.2.3-0.0.0' | Should -Be $true
-        Test-SemanticVersion -Version '1.2.3-a.0.0' | Should -Be $true
-        Test-SemanticVersion -Version '1.2.3-0.a.0' | Should -Be $true
-        Test-SemanticVersion -Version '1.2.3-0.-.0' | Should -Be $true
-        Test-SemanticVersion -Version '1.2.3-0+0' | Should -Be $true
-        Test-SemanticVersion -Version '1.2.3+0' | Should -Be $true
-        Test-SemanticVersion -Version '1.2.3+0.0' | Should -Be $true
-        Test-SemanticVersion -Version '1.2.3+0.00' | Should -Be $true
-        Test-SemanticVersion -Version '1.2.3+a.0' | Should -Be $true
-        Test-SemanticVersion -Version '1.2.3+a.-.00.0' | Should -Be $true
-        Test-SemanticVersion -Version '1.2.3-alpha.test.1.2.3+build.it.test.01.02.4' | Should -Be $true
-    }
+    It 'returns ''<result>'' for ''<ver>''' -ForEach @(
+        @{result = $true; ver = '0.0.0' },
+        @{result = $true; ver = '1.2.3' },
+        @{result = $true; ver = '1.2.3-0' },
+        @{result = $true; ver = '1.2.3-0.0' },
+        @{result = $true; ver = '1.2.3-0.0.0' },
+        @{result = $true; ver = '1.2.3-a.0.0' },
+        @{result = $true; ver = '1.2.3-0.a.0' },
+        @{result = $true; ver = '1.2.3-0.-.0' },
+        @{result = $true; ver = '1.2.3-0+0' },
+        @{result = $true; ver = '1.2.3+0' },
+        @{result = $true; ver = '1.2.3+0.0' },
+        @{result = $true; ver = '1.2.3+0.00' },
+        @{result = $true; ver = '1.2.3+a.0' },
+        @{result = $true; ver = '1.2.3+a.-.00.0' },
+        @{result = $true; ver = '1.2.3-alpha.test.1.2.3+build.it.test.01.02.4' }
 
-    It 'Fails if an invalid semantic version string is specified.' {
-        Test-SemanticVersion -Version '1' | Should -Be $false
-        Test-SemanticVersion -Version '1.2' | Should -Be $false
-        Test-SemanticVersion -Version '.1' | Should -Be $false
-        Test-SemanticVersion -Version '1.2.' | Should -Be $false
-        Test-SemanticVersion -Version '.1.2.3' | Should -Be $false
-        Test-SemanticVersion -Version ' 1.2.3' | Should -Be $false
-        Test-SemanticVersion -Version '1..3' | Should -Be $false
-        Test-SemanticVersion -Version '1.2.3.4' | Should -Be $false
-        Test-SemanticVersion -Version '1.a.3' | Should -Be $false
-        Test-SemanticVersion -Version '-1.2.3' | Should -Be $false
-        Test-SemanticVersion -Version '01.2.3' | Should -Be $false
-        Test-SemanticVersion -Version '1.2.3-' | Should -Be $false
-        Test-SemanticVersion -Version '1.2.3-00' | Should -Be $false
-        Test-SemanticVersion -Version '1.2.3-a..0' | Should -Be $false
-        Test-SemanticVersion -Version '1.2.3-+' | Should -Be $false
-        Test-SemanticVersion -Version '1.2.3-0+' | Should -Be $false
-        Test-SemanticVersion -Version '1.2.3-0+0+' | Should -Be $false
-        Test-SemanticVersion -Version '1.2.3+a..0' | Should -Be $false
+        @{result = $false; ver = '1' },
+        @{result = $false; ver = '1.2' },
+        @{result = $false; ver = '.1' },
+        @{result = $false; ver = '1.2.' },
+        @{result = $false; ver = '.1.2.3' },
+        @{result = $false; ver = ' 1.2.3' },
+        @{result = $false; ver = '1..3' },
+        @{result = $false; ver = '1.2.3.4' },
+        @{result = $false; ver = '1.a.3' },
+        @{result = $false; ver = '-1.2.3' },
+        @{result = $false; ver = '01.2.3' },
+        @{result = $false; ver = '1.2.3-' },
+        @{result = $false; ver = '1.2.3-00' },
+        @{result = $false; ver = '1.2.3-a..0' },
+        @{result = $false; ver = '1.2.3-+' },
+        @{result = $false; ver = '1.2.3-0+' },
+        @{result = $false; ver = '1.2.3-0+0+' },
+        @{result = $false; ver = '1.2.3+a..0' }
+    ) {
+        Test-SemanticVersion -Version $ver | Should -Be $result
     }
 }
 
@@ -411,173 +390,126 @@ Describe 'Step-SemanticVersion' {
         $results2[2].ToString() | Should -Be '1.3.0+b5432'
     }
 
-    Context 'Input: 0.0.0-0' {
-        BeforeEach {
-            $inputString = '0.0.0-0'
-        }
+    It 'Increments component ''<component>'' changing ''<ver>'' to ''<expected>''' -ForEach @(
+        @{ver = '0.0.0-0'; component = 'Build'; expected = '0.0.0-0+0' },
+        @{ver = '0.0.0-0'; component = 'PreRelease'; expected = '0.0.0-1' }
+        @{ver = '0.0.0-0'; component = 'PrePatch'; expected = '0.0.1-0' },
+        @{ver = '0.0.0-0'; component = 'PreMinor'; expected = '0.1.0-0' },
+        @{ver = '0.0.0-0'; component = 'PreMajor'; expected = '1.0.0-0' },
+        @{ver = '0.0.0-0'; component = 'Patch'   ; expected = '0.0.0' },
+        @{ver = '0.0.0-0'; component = 'Minor'   ; expected = '0.0.0' },
+        @{ver = '0.0.0-0'; component = 'Major'   ; expected = '0.0.0' },
 
-        It 'Increments Build' { (Step-SemanticVersion $inputString Build     ).ToString() | Should -Be '0.0.0-0+0' }
-        It 'Increments PreRelease' { (Step-SemanticVersion $inputString PreRelease).ToString() | Should -Be '0.0.0-1' }
-        It 'Increments PreRelease Patch' { (Step-SemanticVersion $inputString PrePatch  ).ToString() | Should -Be '0.0.1-0' }
-        It 'Increments PreRelease Minor' { (Step-SemanticVersion $inputString PreMinor  ).ToString() | Should -Be '0.1.0-0' }
-        It 'Increments PreRelease Major' { (Step-SemanticVersion $inputString PreMajor  ).ToString() | Should -Be '1.0.0-0' }
-        It 'Increments Patch' { (Step-SemanticVersion $inputString Patch     ).ToString() | Should -Be '0.0.0' }
-        It 'Increments Minor' { (Step-SemanticVersion $inputString Minor     ).ToString() | Should -Be '0.0.0' }
-        It 'Increments Major' { (Step-SemanticVersion $inputString Major     ).ToString() | Should -Be '0.0.0' }
-    }
+        @{ver = '0.0.0'; component = 'Build'; expected = '0.0.0+0' },
+        @{ver = '0.0.0'; component = 'PreRelease'; expected = '0.0.1-0' },
+        @{ver = '0.0.0'; component = 'PrePatch'  ; expected = '0.0.1-0' },
+        @{ver = '0.0.0'; component = 'PreMinor'  ; expected = '0.1.0-0' },
+        @{ver = '0.0.0'; component = 'PreMajor'  ; expected = '1.0.0-0' },
+        @{ver = '0.0.0'; component = 'Patch'     ; expected = '0.0.1' },
+        @{ver = '0.0.0'; component = 'Minor'     ; expected = '0.1.0' },
+        @{ver = '0.0.0'; component = 'Major'     ; expected = '1.0.0' },
 
-    Context 'Input: 0.0.0' {
-        BeforeEach {
-            $inputString = '0.0.0'
-        }
+        @{ver = '1.0.0-0'; component = 'Build'; expected = '1.0.0-0+0' },
+        @{ver = '1.0.0-0'; component = 'PreRelease'; expected = '1.0.0-1' },
+        @{ver = '1.0.0-0'; component = 'PrePatch'; expected = '1.0.1-0' },
+        @{ver = '1.0.0-0'; component = 'PreMinor'; expected = '1.1.0-0' },
+        @{ver = '1.0.0-0'; component = 'PreMajor'; expected = '2.0.0-0' },
+        @{ver = '1.0.0-0'; component = 'Patch'; expected = '1.0.0' },
+        @{ver = '1.0.0-0'; component = 'Minor'; expected = '1.0.0' },
+        @{ver = '1.0.0-0'; component = 'Major'; expected = '1.0.0' },
 
-        It 'Increments Build' { (Step-SemanticVersion $inputString Build     ).ToString() | Should -Be '0.0.0+0' }
-        It 'Increments PreRelease' { (Step-SemanticVersion $inputString PreRelease).ToString() | Should -Be '0.0.1-0' }
-        It 'Increments PreRelease Patch' { (Step-SemanticVersion $inputString PrePatch  ).ToString() | Should -Be '0.0.1-0' }
-        It 'Increments PreRelease Minor' { (Step-SemanticVersion $inputString PreMinor  ).ToString() | Should -Be '0.1.0-0' }
-        It 'Increments PreRelease Major' { (Step-SemanticVersion $inputString PreMajor  ).ToString() | Should -Be '1.0.0-0' }
-        It 'Increments Patch' { (Step-SemanticVersion $inputString Patch     ).ToString() | Should -Be '0.0.1' }
-        It 'Increments Minor' { (Step-SemanticVersion $inputString Minor     ).ToString() | Should -Be '0.1.0' }
-        It 'Increments Major' { (Step-SemanticVersion $inputString Major     ).ToString() | Should -Be '1.0.0' }
-    }
+        @{ver = '1.0.0'; component = 'Build'; expected = '1.0.0+0' },
+        @{ver = '1.0.0'; component = 'PreRelease'; expected = '1.0.1-0' },
+        @{ver = '1.0.0'; component = 'PrePatch'; expected = '1.0.1-0' },
+        @{ver = '1.0.0'; component = 'PreMinor'; expected = '1.1.0-0' },
+        @{ver = '1.0.0'; component = 'PreMajor'; expected = '2.0.0-0' },
+        @{ver = '1.0.0'; component = 'Patch'; expected = '1.0.1' },
+        @{ver = '1.0.0'; component = 'Minor'; expected = '1.1.0' },
+        @{ver = '1.0.0'; component = 'Major'; expected = '2.0.0' },
 
-    Context 'Input: 1.0.0-0' {
-        BeforeEach {
-            $inputString = '1.0.0-0'
-        }
+        @{ver = '1.0.1-0'; component = 'Build'; expected = '1.0.1-0+0' },
+        @{ver = '1.0.1-0'; component = 'PreRelease'; expected = '1.0.1-1' },
+        @{ver = '1.0.1-0'; component = 'PrePatch'; expected = '1.0.2-0' },
+        @{ver = '1.0.1-0'; component = 'PreMinor'; expected = '1.1.0-0' },
+        @{ver = '1.0.1-0'; component = 'PreMajor'; expected = '2.0.0-0' },
+        @{ver = '1.0.1-0'; component = 'Patch'; expected = '1.0.1' },
+        @{ver = '1.0.1-0'; component = 'Minor'; expected = '1.1.0' },
+        @{ver = '1.0.1-0'; component = 'Major'; expected = '2.0.0' },
 
-        It 'Increments Build' { (Step-SemanticVersion $inputString Build     ).ToString() | Should -Be '1.0.0-0+0' }
-        It 'Increments PreRelease' { (Step-SemanticVersion $inputString PreRelease).ToString() | Should -Be '1.0.0-1' }
-        It 'Increments PreRelease Patch' { (Step-SemanticVersion $inputString PrePatch  ).ToString() | Should -Be '1.0.1-0' }
-        It 'Increments PreRelease Minor' { (Step-SemanticVersion $inputString PreMinor  ).ToString() | Should -Be '1.1.0-0' }
-        It 'Increments PreRelease Major' { (Step-SemanticVersion $inputString PreMajor  ).ToString() | Should -Be '2.0.0-0' }
-        It 'Increments Patch' { (Step-SemanticVersion $inputString Patch     ).ToString() | Should -Be '1.0.0' }
-        It 'Increments Minor' { (Step-SemanticVersion $inputString Minor     ).ToString() | Should -Be '1.0.0' }
-        It 'Increments Major' { (Step-SemanticVersion $inputString Major     ).ToString() | Should -Be '1.0.0' }
-    }
+        @{ver = '1.0.1'; component = 'Build'; expected = '1.0.1+0' },
+        @{ver = '1.0.1'; component = 'PreRelease'; expected = '1.0.2-0' },
+        @{ver = '1.0.1'; component = 'PrePatch'; expected = '1.0.2-0' },
+        @{ver = '1.0.1'; component = 'PreMinor'; expected = '1.1.0-0' },
+        @{ver = '1.0.1'; component = 'PreMajor'; expected = '2.0.0-0' },
+        @{ver = '1.0.1'; component = 'Patch'; expected = '1.0.2' },
+        @{ver = '1.0.1'; component = 'Minor'; expected = '1.1.0' },
+        @{ver = '1.0.1'; component = 'Major'; expected = '2.0.0' },
 
-    Context 'Input: 1.0.0' {
-        BeforeEach {
-            $inputString = '1.0.0'
-        }
+        @{ver = '1.1.0-0'; component = 'Build'; expected = '1.1.0-0+0' },
+        @{ver = '1.1.0-0'; component = 'PreRelease'; expected = '1.1.0-1' },
+        @{ver = '1.1.0-0'; component = 'PrePatch'; expected = '1.1.1-0' },
+        @{ver = '1.1.0-0'; component = 'PreMinor'; expected = '1.2.0-0' },
+        @{ver = '1.1.0-0'; component = 'PreMajor'; expected = '2.0.0-0' },
+        @{ver = '1.1.0-0'; component = 'Patch'; expected = '1.1.0' },
+        @{ver = '1.1.0-0'; component = 'Minor'; expected = '1.1.0' },
+        @{ver = '1.1.0-0'; component = 'Major'; expected = '2.0.0' },
 
-        It 'Increments Build' { (Step-SemanticVersion $inputString Build     ).ToString() | Should -Be '1.0.0+0' }
-        It 'Increments PreRelease' { (Step-SemanticVersion $inputString PreRelease).ToString() | Should -Be '1.0.1-0' }
-        It 'Increments PreRelease Patch' { (Step-SemanticVersion $inputString PrePatch  ).ToString() | Should -Be '1.0.1-0' }
-        It 'Increments PreRelease Minor' { (Step-SemanticVersion $inputString PreMinor  ).ToString() | Should -Be '1.1.0-0' }
-        It 'Increments PreRelease Major' { (Step-SemanticVersion $inputString PreMajor  ).ToString() | Should -Be '2.0.0-0' }
-        It 'Increments Patch' { (Step-SemanticVersion $inputString Patch     ).ToString() | Should -Be '1.0.1' }
-        It 'Increments Minor' { (Step-SemanticVersion $inputString Minor     ).ToString() | Should -Be '1.1.0' }
-        It 'Increments Major' { (Step-SemanticVersion $inputString Major     ).ToString() | Should -Be '2.0.0' }
-    }
+        @{ver = '1.1.0'; component = 'Build'; expected = '1.1.0+0' },
+        @{ver = '1.1.0'; component = 'PreRelease'; expected = '1.1.1-0' },
+        @{ver = '1.1.0'; component = 'PrePatch'; expected = '1.1.1-0' },
+        @{ver = '1.1.0'; component = 'PreMinor'; expected = '1.2.0-0' },
+        @{ver = '1.1.0'; component = 'PreMajor'; expected = '2.0.0-0' },
+        @{ver = '1.1.0'; component = 'Patch'; expected = '1.1.1' },
+        @{ver = '1.1.0'; component = 'Minor'; expected = '1.2.0' },
+        @{ver = '1.1.0'; component = 'Major'; expected = '2.0.0' },
 
-    Context 'Input: 1.0.1-0' {
-        BeforeEach {
-            $inputString = '1.0.1-0'
-        }
+        @{ver = '1.1.1-0'; component = 'Build'; expected = '1.1.1-0+0' },
+        @{ver = '1.1.1-0'; component = 'PreRelease'; expected = '1.1.1-1' },
+        @{ver = '1.1.1-0'; component = 'PrePatch'; expected = '1.1.2-0' },
+        @{ver = '1.1.1-0'; component = 'PreMinor'; expected = '1.2.0-0' },
+        @{ver = '1.1.1-0'; component = 'PreMajor'; expected = '2.0.0-0' },
+        @{ver = '1.1.1-0'; component = 'Patch'; expected = '1.1.1' },
+        @{ver = '1.1.1-0'; component = 'Minor'; expected = '1.2.0' },
+        @{ver = '1.1.1-0'; component = 'Major'; expected = '2.0.0' },
 
-        It 'Increments Build' { (Step-SemanticVersion $inputString Build     ).ToString() | Should -Be '1.0.1-0+0' }
-        It 'Increments PreRelease' { (Step-SemanticVersion $inputString PreRelease).ToString() | Should -Be '1.0.1-1' }
-        It 'Increments PreRelease Patch' { (Step-SemanticVersion $inputString PrePatch  ).ToString() | Should -Be '1.0.2-0' }
-        It 'Increments PreRelease Minor' { (Step-SemanticVersion $inputString PreMinor  ).ToString() | Should -Be '1.1.0-0' }
-        It 'Increments PreRelease Major' { (Step-SemanticVersion $inputString PreMajor  ).ToString() | Should -Be '2.0.0-0' }
-        It 'Increments Patch' { (Step-SemanticVersion $inputString Patch     ).ToString() | Should -Be '1.0.1' }
-        It 'Increments Minor' { (Step-SemanticVersion $inputString Minor     ).ToString() | Should -Be '1.1.0' }
-        It 'Increments Major' { (Step-SemanticVersion $inputString Major     ).ToString() | Should -Be '2.0.0' }
-    }
-
-    Context 'Input: 1.0.1' {
-        BeforeEach {
-            $inputString = '1.0.1'
-        }
-
-        It 'Increments Build' { (Step-SemanticVersion $inputString Build     ).ToString() | Should -Be '1.0.1+0' }
-        It 'Increments PreRelease' { (Step-SemanticVersion $inputString PreRelease).ToString() | Should -Be '1.0.2-0' }
-        It 'Increments PreRelease Patch' { (Step-SemanticVersion $inputString PrePatch  ).ToString() | Should -Be '1.0.2-0' }
-        It 'Increments PreRelease Minor' { (Step-SemanticVersion $inputString PreMinor  ).ToString() | Should -Be '1.1.0-0' }
-        It 'Increments PreRelease Major' { (Step-SemanticVersion $inputString PreMajor  ).ToString() | Should -Be '2.0.0-0' }
-        It 'Increments Patch' { (Step-SemanticVersion $inputString Patch     ).ToString() | Should -Be '1.0.2' }
-        It 'Increments Minor' { (Step-SemanticVersion $inputString Minor     ).ToString() | Should -Be '1.1.0' }
-        It 'Increments Major' { (Step-SemanticVersion $inputString Major     ).ToString() | Should -Be '2.0.0' }
-    }
-
-    Context 'Input: 1.1.0-0' {
-        BeforeEach {
-            $inputString = '1.1.0-0'
-        }
-
-        It 'Increments Build' { (Step-SemanticVersion $inputString Build     ).ToString() | Should -Be '1.1.0-0+0' }
-        It 'Increments PreRelease' { (Step-SemanticVersion $inputString PreRelease).ToString() | Should -Be '1.1.0-1' }
-        It 'Increments PreRelease Patch' { (Step-SemanticVersion $inputString PrePatch  ).ToString() | Should -Be '1.1.1-0' }
-        It 'Increments PreRelease Minor' { (Step-SemanticVersion $inputString PreMinor  ).ToString() | Should -Be '1.2.0-0' }
-        It 'Increments PreRelease Major' { (Step-SemanticVersion $inputString PreMajor  ).ToString() | Should -Be '2.0.0-0' }
-        It 'Increments Patch' { (Step-SemanticVersion $inputString Patch     ).ToString() | Should -Be '1.1.0' }
-        It 'Increments Minor' { (Step-SemanticVersion $inputString Minor     ).ToString() | Should -Be '1.1.0' }
-        It 'Increments Major' { (Step-SemanticVersion $inputString Major     ).ToString() | Should -Be '2.0.0' }
-    }
-
-    Context 'Input: 1.1.0' {
-        BeforeEach {
-            $inputString = '1.1.0'
-        }
-
-        It 'Increments Build' { (Step-SemanticVersion $inputString Build     ).ToString() | Should -Be '1.1.0+0' }
-        It 'Increments PreRelease' { (Step-SemanticVersion $inputString PreRelease).ToString() | Should -Be '1.1.1-0' }
-        It 'Increments PreRelease Patch' { (Step-SemanticVersion $inputString PrePatch  ).ToString() | Should -Be '1.1.1-0' }
-        It 'Increments PreRelease Minor' { (Step-SemanticVersion $inputString PreMinor  ).ToString() | Should -Be '1.2.0-0' }
-        It 'Increments PreRelease Major' { (Step-SemanticVersion $inputString PreMajor  ).ToString() | Should -Be '2.0.0-0' }
-        It 'Increments Patch' { (Step-SemanticVersion $inputString Patch     ).ToString() | Should -Be '1.1.1' }
-        It 'Increments Minor' { (Step-SemanticVersion $inputString Minor     ).ToString() | Should -Be '1.2.0' }
-        It 'Increments Major' { (Step-SemanticVersion $inputString Major     ).ToString() | Should -Be '2.0.0' }
-    }
-
-    Context 'Input: 1.1.1-0' {
-        BeforeEach {
-            $inputString = '1.1.1-0'
-        }
-
-        It 'Increments Build' { (Step-SemanticVersion $inputString Build     ).ToString() | Should -Be '1.1.1-0+0' }
-        It 'Increments PreRelease' { (Step-SemanticVersion $inputString PreRelease).ToString() | Should -Be '1.1.1-1' }
-        It 'Increments PreRelease Patch' { (Step-SemanticVersion $inputString PrePatch  ).ToString() | Should -Be '1.1.2-0' }
-        It 'Increments PreRelease Minor' { (Step-SemanticVersion $inputString PreMinor  ).ToString() | Should -Be '1.2.0-0' }
-        It 'Increments PreRelease Major' { (Step-SemanticVersion $inputString PreMajor  ).ToString() | Should -Be '2.0.0-0' }
-        It 'Increments Patch' { (Step-SemanticVersion $inputString Patch     ).ToString() | Should -Be '1.1.1' }
-        It 'Increments Minor' { (Step-SemanticVersion $inputString Minor     ).ToString() | Should -Be '1.2.0' }
-        It 'Increments Major' { (Step-SemanticVersion $inputString Major     ).ToString() | Should -Be '2.0.0' }
-    }
-
-    Context 'Input: 1.1.1' {
-        BeforeEach {
-            $inputString = '1.1.1'
-        }
-
-        It 'Increments Build' { (Step-SemanticVersion $inputString Build     ).ToString() | Should -Be '1.1.1+0' }
-        It 'Increments PreRelease' { (Step-SemanticVersion $inputString PreRelease).ToString() | Should -Be '1.1.2-0' }
-        It 'Increments PreRelease Patch' { (Step-SemanticVersion $inputString PrePatch  ).ToString() | Should -Be '1.1.2-0' }
-        It 'Increments PreRelease Minor' { (Step-SemanticVersion $inputString PreMinor  ).ToString() | Should -Be '1.2.0-0' }
-        It 'Increments PreRelease Major' { (Step-SemanticVersion $inputString PreMajor  ).ToString() | Should -Be '2.0.0-0' }
-        It 'Increments Patch' { (Step-SemanticVersion $inputString Patch     ).ToString() | Should -Be '1.1.2' }
-        It 'Increments Minor' { (Step-SemanticVersion $inputString Minor     ).ToString() | Should -Be '1.2.0' }
-        It 'Increments Major' { (Step-SemanticVersion $inputString Major     ).ToString() | Should -Be '2.0.0' }
+        @{ver = '1.1.1'; component = 'Build'; expected = '1.1.1+0' },
+        @{ver = '1.1.1'; component = 'PreRelease'; expected = '1.1.2-0' },
+        @{ver = '1.1.1'; component = 'PrePatch'; expected = '1.1.2-0' },
+        @{ver = '1.1.1'; component = 'PreMinor'; expected = '1.2.0-0' },
+        @{ver = '1.1.1'; component = 'PreMajor'; expected = '2.0.0-0' },
+        @{ver = '1.1.1'; component = 'Patch'; expected = '1.1.2' },
+        @{ver = '1.1.1'; component = 'Minor'; expected = '1.2.0' },
+        @{ver = '1.1.1'; component = 'Major'; expected = '2.0.0' }
+    ) {
+        (Step-SemanticVersion $ver $component).ToString() | Should -Be $expected
     }
 
     Context 'Incrementing PreRelease using label' {
-        It 'Increments PreRelease using label' { (Step-SemanticVersion 1.1.1-0 PreRelease alpha).ToString()   | Should -Be '1.1.1-alpha' }
-        It 'Increments label of higher precedence' { (Step-SemanticVersion 1.1.1-alpha.0 PreRelease beta).ToString()   | Should -Be '1.1.1-beta' }
-        It 'Throws if label is lower precedence' { { Step-SemanticVersion 1.1.1-beta PreRelease alpha }              | Should -Throw 2>$null }
-        It 'Increments PreRelease Patch using label' { (Step-SemanticVersion 1.1.1-0 PrePatch alpha).ToString()   | Should -Be '1.1.2-alpha' }
-        It 'Increments PreRelease Minor using label' { (Step-SemanticVersion 1.1.1-0 PreMinor alpha).ToString()   | Should -Be '1.2.0-alpha' }
-        It 'Increments PreRelease Major using label' { (Step-SemanticVersion 1.1.1-0 PreMajor alpha).ToString()   | Should -Be '2.0.0-alpha' }
-        It 'Increments Patch ignoring the label' { (Step-SemanticVersion 1.1.1-0 Patch alpha).ToString()   | Should -Be '1.1.1' }
-        It 'Increments Minor ignoring the label' { (Step-SemanticVersion 1.1.1-0 Minor alpha).ToString()   | Should -Be '1.2.0' }
-        It 'Increments Major ignoring the label' { (Step-SemanticVersion 1.1.1-0 Major alpha).ToString()   | Should -Be '2.0.0' }
+        It 'Throws if label is lower precedence' { { Step-SemanticVersion 1.1.1-beta PreRelease alpha }            | Should -Throw 2>$null }
+
+        It 'Increments ''<ver>'' to ''<expected>''' -ForEach @(
+            @{ver = '1.1.1-0'; component = 'PreRelease'; label = 'alpha'; expected = '1.1.1-alpha' },
+            @{ver = '1.1.1-alpha.0'; component = 'PreRelease'; label = 'beta'; expected = '1.1.1-beta' },
+            @{ver = '1.1.1-0'; component = 'PrePatch'; label = 'alpha'; expected = '1.1.2-alpha' },
+            @{ver = '1.1.1-0'; component = 'PreMinor'; label = 'alpha'; expected = '1.2.0-alpha' },
+            @{ver = '1.1.1-0'; component = 'PreMajor'; label = 'alpha'; expected = '2.0.0-alpha' },
+            @{ver = '1.1.1-0'; component = 'Patch'; label = 'alpha'; expected = '1.1.1' },
+            @{ver = '1.1.1-0'; component = 'Minor'; label = 'alpha'; expected = '1.2.0' },
+            @{ver = '1.1.1-0'; component = 'Major'; label = 'alpha'; expected = '2.0.0' }
+        ) {
+            (Step-SemanticVersion $ver $component $label).ToString() | Should -Be $expected
+        }
     }
 
     Context 'Incrementing Build using label' {
-        It 'Increments Build using label' { (Step-SemanticVersion 1.1.1 Build alpha     ).ToString() | Should -Be '1.1.1+alpha' }
-        It 'Increments Build using label' { (Step-SemanticVersion 1.1.1+0 Build alpha   ).ToString() | Should -Be '1.1.1+alpha' }
-        It 'Increments label of higher precedence' { (Step-SemanticVersion 1.1.1+alpha Build beta).ToString() | Should -Be '1.1.1+beta' }
-        It 'Increments label of lower precedence' { (Step-SemanticVersion 1.1.1+beta Build alpha).ToString() | Should -Be '1.1.1+alpha' }
+        It 'Increments ''<ver>'' to ''<expected>''' -ForEach @(
+            @{ver = '1.1.1'; component = 'Build'; label = 'alpha'; expected = '1.1.1+alpha' },
+            @{ver = '1.1.1+0'; component = 'Build'; label = 'alpha'; expected = '1.1.1+alpha' },
+            @{ver = '1.1.1+alpha'; component = 'Build'; label = 'beta'; expected = '1.1.1+beta' },
+            @{ver = '1.1.1+beta'; component = 'Build'; label = 'alpha'; expected = '1.1.1+alpha' }
+        ) {
+            (Step-SemanticVersion $ver $component $label).ToString() | Should -Be $expected
+        }
     }
 }
 
