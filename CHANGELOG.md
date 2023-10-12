@@ -5,6 +5,13 @@ This project adheres to [Semantic Versioning](http://semver.org/) for
 official project tracking. For technical reasons, the module version
 number cannot be expressed using Semantic Versioning.
 
+## 1.5.3 - 2023-10-12
+
+### Fixes
+
+- Fix issue when importing module and getting error when removing variables.
+
+
 ## 1.5.2 - 2019-03-01
 
 ### Fixes
