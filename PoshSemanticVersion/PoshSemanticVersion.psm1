@@ -111,5 +111,3 @@ foreach ($key in $localizedMessages.Keys) {
 
 [System.Globalization.CultureInfo] $Script:cultureInfo = Get-Culture
 [System.Globalization.TextInfo] $Script:textInfo = $cultureInfo.TextInfo
-
-Remove-Variable privateScriptFiles, publicScriptFiles, file, localizedMessages, key
